@@ -1,1 +1,6 @@
 autom4te.cache/
+config.status
+config.log
+stamp-h1
+*.o
+.deps/

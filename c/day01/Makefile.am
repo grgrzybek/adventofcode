@@ -1,2 +1,2 @@
-bin_PROGRAMS = day01a
-day01a_SOURCES = day01a.c
+bin_PROGRAMS = day01
+day01_SOURCES = day01.c

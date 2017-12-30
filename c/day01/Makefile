@@ -86,7 +86,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = day01a$(EXEEXT)
+bin_PROGRAMS = day01$(EXEEXT)
 subdir = day01
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -99,9 +99,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_day01a_OBJECTS = day01.$(OBJEXT)
-day01a_OBJECTS = $(am_day01a_OBJECTS)
-day01a_LDADD = $(LDADD)
+am_day01_OBJECTS = day01.$(OBJEXT)
+day01_OBJECTS = $(am_day01_OBJECTS)
+day01_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -130,8 +130,8 @@ AM_V_CCLD = $(am__v_CCLD_$(V))
 am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(day01a_SOURCES)
-DIST_SOURCES = $(day01a_SOURCES)
+SOURCES = $(day01_SOURCES)
+DIST_SOURCES = $(day01_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -242,7 +242,7 @@ target_alias =
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-day01a_SOURCES = day01.c
+day01_SOURCES = day01.c
 all: all-am
 
 .SUFFIXES:
@@ -319,9 +319,9 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
-day01a$(EXEEXT): $(day01a_OBJECTS) $(day01a_DEPENDENCIES) $(EXTRA_day01a_DEPENDENCIES) 
-	@rm -f day01a$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(day01a_OBJECTS) $(day01a_LDADD) $(LIBS)
+day01$(EXEEXT): $(day01_OBJECTS) $(day01_DEPENDENCIES) $(EXTRA_day01_DEPENDENCIES) 
+	@rm -f day01$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(day01_OBJECTS) $(day01_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
