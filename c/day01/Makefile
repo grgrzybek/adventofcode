@@ -99,9 +99,11 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_day01_OBJECTS = day01.$(OBJEXT)
+am_day01_OBJECTS = day01-day01.$(OBJEXT)
 day01_OBJECTS = $(am_day01_OBJECTS)
 day01_LDADD = $(LDADD)
+day01_LINK = $(CCLD) $(day01_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -118,6 +120,10 @@ DEFAULT_INCLUDES = -I. -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 AM_V_CC = $(am__v_CC_$(V))
@@ -167,7 +173,7 @@ AUTOMAKE = ${SHELL} /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2017
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2
+CFLAGS = 
 CPPFLAGS = 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
@@ -243,6 +249,7 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 day01_SOURCES = day01.c
+day01_CFLAGS = -g -O0
 all: all-am
 
 .SUFFIXES:
@@ -321,7 +328,7 @@ clean-binPROGRAMS:
 
 day01$(EXEEXT): $(day01_OBJECTS) $(day01_DEPENDENCIES) $(EXTRA_day01_DEPENDENCIES) 
 	@rm -f day01$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(day01_OBJECTS) $(day01_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(day01_LINK) $(day01_OBJECTS) $(day01_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -329,7 +336,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/day01.Po
+include ./$(DEPDIR)/day01-day01.Po
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -344,6 +351,20 @@ include ./$(DEPDIR)/day01.Po
 #	$(AM_V_CC)source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+day01-day01.o: day01.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(day01_CFLAGS) $(CFLAGS) -MT day01-day01.o -MD -MP -MF $(DEPDIR)/day01-day01.Tpo -c -o day01-day01.o `test -f 'day01.c' || echo '$(srcdir)/'`day01.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/day01-day01.Tpo $(DEPDIR)/day01-day01.Po
+#	$(AM_V_CC)source='day01.c' object='day01-day01.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(day01_CFLAGS) $(CFLAGS) -c -o day01-day01.o `test -f 'day01.c' || echo '$(srcdir)/'`day01.c
+
+day01-day01.obj: day01.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(day01_CFLAGS) $(CFLAGS) -MT day01-day01.obj -MD -MP -MF $(DEPDIR)/day01-day01.Tpo -c -o day01-day01.obj `if test -f 'day01.c'; then $(CYGPATH_W) 'day01.c'; else $(CYGPATH_W) '$(srcdir)/day01.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/day01-day01.Tpo $(DEPDIR)/day01-day01.Po
+#	$(AM_V_CC)source='day01.c' object='day01-day01.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(day01_CFLAGS) $(CFLAGS) -c -o day01-day01.obj `if test -f 'day01.c'; then $(CYGPATH_W) 'day01.c'; else $(CYGPATH_W) '$(srcdir)/day01.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
