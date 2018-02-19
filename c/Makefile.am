@@ -1,1 +1,1 @@
-SUBDIRS = day01
+SUBDIRS = day01 day02

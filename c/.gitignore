@@ -1,6 +1,24 @@
+# http://www.gnu.org/software/automake
+
+Makefile.in
+Makefile
+
+# http://www.gnu.org/software/autoconf
+
 autom4te.cache/
-config.status
-config.log
-stamp-h1
-*.o
+autoscan.log
+autoscan-*.log
+aclocal.m4
+config.*
+configure
+configure.scan
+compile
+depcomp
+install-sh
+missing
+stamp-h?
+
+# other
+
 .deps/
+*.o
