@@ -61,16 +61,63 @@ int main(int argc, char *argv[]) {
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t read = 0;
+
+	int checksum1 = 0, checksum2 = 0;
 	while (!feof(input)) {
 		// read - number of characters in line, len - size of allocated buffer
 		read = getline(&line, &len, input);
-		char *token = NULL, *_line = line;
+		if (read < 0)
+			continue;
+		char *token = NULL;
+		char *_line = strdup(line);
+		// we have to free _line, but it'll be strtoked in the meantime
+		char *__line = _line;
+		size_t size = 0;
 		while ((token = strtok(_line, delimiters)) != NULL) {
+			if (strlen(token))
+				size++;
 			_line = NULL;
+		}
+		free (__line);
+		if (size > 0) {
+			// another copy
+			__line = _line = strdup(line);
+			int numbers[size], idx = 0, idx2 = 0;
+			while ((token = strtok(_line, delimiters)) != NULL) {
+				numbers[idx++] = (int)strtol(token, NULL, 10);
+				_line = NULL;
+			}
+			int min = INT_MAX, max = INT_MIN;
+			int n1 = 0, n2 = 0;
+			idx = 0;
+			while (idx < size) {
+				if (numbers[idx] > max)
+					max = numbers[idx];
+				if (numbers[idx] < min)
+					min = numbers[idx];
+
+				idx2 = 0;
+				while (idx2 < size) {
+					if (numbers[idx] % numbers[idx2] == 0 && idx != idx2) {
+						n1 = numbers[idx];
+						n2 = numbers[idx2];
+					}
+					idx2++;
+				}
+				idx++;
+			}
+			checksum1 += (max - min);
+			checksum2 += (n1 / n2);
+			free(__line);
+
 		}
 		free(line);
 		line = NULL;
 	}
+
+	printf("Answer 1: %d\n", checksum1);
+	printf("Answer 2: %d\n", checksum2);
+
 	fclose(input);
 
 	exit(EXIT_SUCCESS);
