@@ -5,7 +5,8 @@ AC_INIT([adventofcode2017], [1.0.0], [gr.grzybek@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AM_SILENT_RULES([yes])
 
-${CFLAGS=""}
+# we can just `make CFLAGS="-g 0-O0" instead
+#${CFLAGS=""}
 
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
