@@ -14,6 +14,7 @@ AC_CONFIG_FILES([
        Makefile
        day01/Makefile
        day02/Makefile
+       day03/Makefile
 ])
 
 AC_OUTPUT
