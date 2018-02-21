@@ -26,6 +26,7 @@ static const struct option longopts[] = {
 static int input = 312051;
 
 static void print_help(void);
+static int fill(int **tab, int x, int y);
 
 int main(int argc, char *argv[]) {
 
@@ -106,16 +107,64 @@ int main(int argc, char *argv[]) {
 
 	int half = (size + 1) / 2;
 	int middle = a + half - 1;
-	int c2 = 0;
-	if (input < middle)
-		c2 = middle - input;
-	else if (input > middle)
-		c2 = input - middle;
+	int c2 = input <= middle ? middle - input : input - middle;
 
 	printf("Answer 1: %d:%d=%d\n", c1, c2, c1 + c2);
-//	printf("Answer 2: %d\n", checksum2);
 
+	// now with actual allocation, with additional frame of zeros
+	int **tab = calloc((size + 2), sizeof(int *));
+	for (int n = 0; n < size + 2; n++)
+		*(tab + n) = calloc((size + 2), sizeof(int));
+
+	int x = (size + 1) / 2, y = x;
+	tab[x][y] = 1;
+	int greater_than_input = 1;
+
+	// we'll move outside from center of the square by spiral. right x 1, top x 1, left x 2, bottom x 2,
+	// right x 3, top x 3, ...
+	int dx = 0, dy = 0, step = 1;
+	int ddx[] = { 1, 0, -1, 0 };
+	int ddy[] = { 0, -1, 0, 1 };
+	int ddidx = 0;
+
+	while (greater_than_input <= input) {
+		dx = ddx[ddidx];
+		dy = ddy[ddidx];
+//		printf("x=%d, y=%d\n", x, y);
+//		printf("dx=%d, dy=%d\n", dx, dy);
+		ddidx = (ddidx + 1) % 4;
+		for (int n = 1; n <= step && greater_than_input <= input; n++) {
+			greater_than_input = fill(tab, x + (dx * n), y + (dy * n));
+		}
+		x += (dx * step);
+		y += (dy * step);
+		dx = ddx[ddidx];
+		dy = ddy[ddidx];
+//		printf("x=%d, y=%d\n", x, y);
+//		printf("dx=%d, dy=%d\n", dx, dy);
+		ddidx = (ddidx + 1) % 4;
+		for (int n = 1; n <= step && greater_than_input <= input; n++) {
+			greater_than_input = fill(tab, x + (dx * n), y + (dy * n));
+		}
+		x += (dx * step);
+		y += (dy * step);
+		++step;
+	}
+
+	printf("Answer 2: %d\n", greater_than_input);
+
+	for (int n = 0; n < size + 2; n++)
+		free(*(tab + n));
+	free(tab);
 	exit(EXIT_SUCCESS);
+}
+
+int fill(int **tab, int sx, int sy) {
+//	printf("filling %d:%d\n", sx, sy);
+	tab[sx][sy] = tab[sx + 1][sy - 1] + tab[sx + 1][sy] + tab[sx + 1][sy + 1]
+			+ tab[sx][sy - 1] + tab[sx][sy + 1]
+			+ tab[sx - 1][sy - 1] + tab[sx - 1][sy] + tab[sx - 1][sy + 1];
+	return tab[sx][sy];
 }
 
 static void print_help(void) {
