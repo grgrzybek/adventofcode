@@ -9,12 +9,15 @@ AM_SILENT_RULES([yes])
 #${CFLAGS=""}
 
 AC_PROG_CC
+AC_PROG_CXX
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
        Makefile
        day01/Makefile
        day02/Makefile
        day03/Makefile
+       day04/Makefile
 ])
 
 AC_OUTPUT
