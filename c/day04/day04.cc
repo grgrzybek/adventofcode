@@ -65,25 +65,33 @@ int main(int argc, char *argv[]) {
 	}
 
 	string line;
-	set<string> tokens;
-	int valid_count = 0;
+	set<string> tokens1, tokens2;
+	int valid_count1 = 0;
+	int valid_count2 = 0;
 
 	while (*input) {
 		getline(*input, line);
 		istringstream iss(line);
-		tokens.clear();
-//		copy(istream_iterator<string>(iss), istream_iterator<string>(), inserter(tokens, tokens.begin()));
+		tokens1.clear();
+		tokens2.clear();
+//		copy(istream_iterator<string>(iss), istream_iterator<string>(), inserter(tokens1, tokens1.begin()));
 		int words = 0;
 		for (istream_iterator<string> t = istream_iterator<string>(iss); t != istream_iterator<string>(); t++, words++) {
-			tokens.insert(*t);
+			tokens1.insert(*t);
+			string s = *t;
+			sort(s.begin(), s.end());
+			tokens2.insert(s);
 		}
-		if (words != 0 && tokens.size() == words)
-			valid_count++;
+		if (words != 0 && tokens1.size() == words)
+			valid_count1++;
+		if (words != 0 && tokens2.size() == words)
+			valid_count2++;
 	}
 
 	delete input;
 
-	cout << "Answer 1: " << valid_count << endl;
+	cout << "Answer 1: " << valid_count1 << endl;
+	cout << "Answer 2: " << valid_count2 << endl;
 
 	return EXIT_SUCCESS;
 }
