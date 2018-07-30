@@ -80,24 +80,15 @@ int main(int argc, char *argv[]) {
 	// second manhattan coordinate is the distance from the center of the edge
 	// finding correct edge of square
 	int a = br2, b = tr;
-	while (1) {
-		if (!(a <= input && input <= b))
-			a = tr, b = tl;
-		else
-			break;
-		if (!(a <= input && input <= b))
-			a = tl, b = bl;
-		else
-			break;
-		if (!(a <= input && input <= b))
-			a = bl, b = br;
-		else
-			break;
-		if (!(a <= input && input <= b)) {
-			fprintf(stderr, "Can't find location for %d!\n", input);
-			exit(EXIT_FAILURE);
-		}
-		break;
+	if (!(a <= input && input <= b))
+		a = tr, b = tl;
+	if (!(a <= input && input <= b))
+		a = tl, b = bl;
+	if (!(a <= input && input <= b))
+		a = bl, b = br;
+	if (!(a <= input && input <= b)) {
+		fprintf(stderr, "Can't find location for %d!\n", input);
+		exit(EXIT_FAILURE);
 	}
 
 	// to make right edge equal to others
