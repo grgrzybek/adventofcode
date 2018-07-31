@@ -16,38 +16,64 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package main
+package aoc2017
 
 import (
-	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
-	"log"
+
+	"github.com/grgrzybek/adventofcode2017/go/cmd"
+	"github.com/spf13/cobra"
 )
 
-var version bool
-var help bool
-var input string
+var file string
 
 func init() {
-	flag.BoolVar(&version, "version", false, "prints version and exits")
-	flag.BoolVar(&help, "help", false, "information about usage")
-	flag.StringVar(&input, "input", "", "puzzle input")
-	flag.StringVar(&input, "i", "", "puzzle input")
+	var day01Cmd = &cobra.Command{
+		Use:   "day01",
+		Short: "Day 01 example",
+		Run:   run,
+	}
+	day01Cmd.Flags().StringVarP(&file, "input", "i", "", "Input file with puzzle data")
+	aoc2017.RootCmd.AddCommand(day01Cmd)
 }
 
-func main() {
-	flag.Parse()
-	log.SetFlags(log.Ltime | log.Lmicroseconds | log.Lshortfile)
-	log.Println("Starting main()")
-
-	if help {
-		flag.Usage()
-		os.Exit(0)
-	} else if version {
-		fmt.Println("1.0")
-		os.Exit(0)
+func run(cmd *cobra.Command, _ []string) {
+	if file == "" {
+		cmd.Usage()
+		// fmt.Fprintln(os.Stderr, "File argument is required")
+		os.Exit(1)
 	}
 
-	flag.Usage()
+	var f *os.File
+	var e error
+	if f, e = os.Open(file, ); e != nil {
+		fmt.Fprintln(os.Stderr, e)
+		os.Exit(1)
+	}
+
+	var buf []byte
+	if buf, e = ioutil.ReadAll(f); e != nil {
+		fmt.Fprintln(os.Stderr, e)
+		os.Exit(1)
+	}
+
+	var sum1, sum2, limit int
+
+	for limit = len(buf); buf[limit-1] < byte('0') || buf[limit-1] > byte('9'); {
+		limit -= 1
+	}
+
+	for i, c := range buf {
+		if c == buf[(i + 1) % limit] {
+			sum1 += int(c) - int('0')
+		}
+	}
+	for i, c := range buf {
+		if c == buf[(i + limit/2) % limit] {
+			sum2 += int(c) - int('0')
+		}
+	}
+	fmt.Printf("Answer 1: %d, Answer 2: %d\n", sum1, sum2)
 }
