@@ -1,0 +1,7 @@
+= Advent of Code 2017 - Go-Lang
+
+This directory contains aoc2017 solutions in go-lang.
+
+== References
+
+Project structure according to https://github.com/golang-standards/project-layout.
