@@ -1,7 +1,5 @@
 package: github.com/grgrzybek/adventofcode2017/go
 import:
-- package: github.com/golang/glog
-  version: fca8c8854093a154ff1eb580aae10276ad6b1b5f
 - package: github.com/spf13/cobra
   version: ~0.0.3
   subpackages:

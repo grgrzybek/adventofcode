@@ -1,8 +1,6 @@
-hash: 7959e9a1c3ae9b88144c827e6a9c9a939f6938a58bd568850048cf54aea6e949
-updated: 2018-07-31T11:48:29.776142201+02:00
+hash: 511e107561a225e541426e625e492bde5f2d5efeceef93553a71e09b07602245
+updated: 2018-08-01T08:15:14.563642991+02:00
 imports:
-- name: github.com/golang/glog
-  version: fca8c8854093a154ff1eb580aae10276ad6b1b5f
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/spf13/cobra
