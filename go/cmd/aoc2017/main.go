@@ -22,6 +22,7 @@ import (
 	"github.com/grgrzybek/adventofcode2017/go/cmd"
 
 	_ "github.com/grgrzybek/adventofcode2017/go/cmd/day01"
+	_ "github.com/grgrzybek/adventofcode2017/go/cmd/day02"
 )
 
 func main() {
