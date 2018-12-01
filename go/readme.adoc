@@ -1,0 +1,11 @@
+= Advent of Code 2018 - Go-Lang
+
+This directory contains aoc2018 solutions in go-lang.
+
+== References
+
+Project structure according to https://github.com/golang-standards/project-layout.
+
+== Development
+
+    glide install --strip-vendor
