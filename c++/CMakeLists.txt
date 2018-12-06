@@ -31,8 +31,8 @@ message("")
 
 # https://cmake.org/cmake/help/v3.12/command/set.html
 # Set a normal, cache, or environment variable to a given value.
-set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/_install")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O0 -g")
+set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/_install")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O0 -g")
 set(CMAKE_CXX_STANDARD 14)
 
 #set(commands day01 day02 CACHE STRING "AoC 2018 commands" FORCE)
@@ -45,6 +45,10 @@ message("PROJECT_BINARY_DIR: ${PROJECT_BINARY_DIR}")
 #message("CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT: ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT}")
 message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 message("")
+
+message("CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message("CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
+message("CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
 
 # Environment variables are used to configure compiler flags, linker flags, test configurations for a regular build process.
 # Some of the environment variables are overriden by predefined CMake Variables. e.g. CXXFLAGS is overriden when CMAKE_CXX_FLAGS is defined.
