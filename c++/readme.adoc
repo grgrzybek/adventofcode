@@ -1,0 +1,46 @@
+= Advent of Code 2018 - C++ with CMake
+
+This directory contains aoc2018 solutions in C++ using CMake build system.
+
+== References
+
+* https://cmake.org/cmake-tutorial/
+* https://tuannguyen68.gitbooks.io/learning-cmake-a-beginner-s-guide/content/index.html
+* https://cliutils.gitlab.io/modern-cmake/
+* https://medium.com/@onur.dundar1/cmake-tutorial-585dd180109b
+* https://community.kde.org/Policies/CMake_Coding_Style
+
+== Development
+
+After creating initial `CMakeLists.txt` it's enough to call `cmake .`
+
+There's good practice to perform out-source build - running `cmake` from different directory.
+
+In older versions there were `-H` and `-B` options to specify Home and Build directory respectively (https://cmake.org/pipermail/cmake-developers/2012-September/016730.html):
+
+----
+15:18 $ cmake -H. -B_build
+...
+PROJECT_SOURCE_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++
+PROJECT_BINARY_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++/_build
+...
+CMAKE_HOME_DIRECTORY: /data/sources/github.com/grgrzybek/adventofcode2018/c++
+CMAKE_SOURCE_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++
+CMAKE_BINARY_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++/_build
+----
+
+But the recommended approach is to `cd` into _Build_ directory and point `cmake` to _Source_ directory:
+
+----
+15:21 $ pwd
+/data/sources/github.com/grgrzybek/adventofcode2018/c++/_build
+
+15:21 $ cmake ..
+...
+PROJECT_SOURCE_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++
+PROJECT_BINARY_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++/_build
+...
+CMAKE_HOME_DIRECTORY: /data/sources/github.com/grgrzybek/adventofcode2018/c++
+CMAKE_SOURCE_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++
+CMAKE_BINARY_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++/_build
+----
