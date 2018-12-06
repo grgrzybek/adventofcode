@@ -22,17 +22,17 @@
 cmake_minimum_required(VERSION 3.12)
 
 # https://cmake.org/cmake/help/v3.12/command/project.html
-project(AdventOfCode2018 VERSION 0.1.0
+project(aoc2018 VERSION 0.1.0
                          DESCRIPTION "Advent of Code 2018 - C++ with CMake")
-message("PROJECT_NAME: ${PROJECT_NAME}")       # or ${AdventOfCode2018_NAME}
-message("PROJECT_VERSION: ${PROJECT_VERSION}") # or ${AdventOfCode2018_VERSION}
+message("PROJECT_NAME: ${PROJECT_NAME}")       # or ${aoc2018_NAME}
+message("PROJECT_VERSION: ${PROJECT_VERSION}") # or ${aoc2018_VERSION}
 message("PROJECT_DESCRIPTION: ${PROJECT_DESCRIPTION}")
 message("")
 
 # https://cmake.org/cmake/help/v3.12/command/set.html
 # Set a normal, cache, or environment variable to a given value.
 set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/_install")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O0 -g")
 set(CMAKE_CXX_STANDARD 14)
 
 #set(commands day01 day02 CACHE STRING "AoC 2018 commands" FORCE)

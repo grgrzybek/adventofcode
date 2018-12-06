@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 	string s = "Hello";
 
 	cout << s << " world!" << endl;
-	cout << aoc2018_VERSION << endl;
+	cout << AOC2018_VERSION << endl;
 
 	return 0;
 }

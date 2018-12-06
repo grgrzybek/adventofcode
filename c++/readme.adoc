@@ -44,3 +44,117 @@ CMAKE_HOME_DIRECTORY: /data/sources/github.com/grgrzybek/adventofcode2018/c++
 CMAKE_SOURCE_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++
 CMAKE_BINARY_DIR: /data/sources/github.com/grgrzybek/adventofcode2018/c++/_build
 ----
+
+== Eclipse CDT
+
+Having non-IDE aware sources and CMake files, we can generate Eclipse project:
+
+    13:14 $ pwd
+    /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018
+    13:14 $ cd ..
+    13:14 $ mkdir adventofcode2018-eclipse
+    13:14 $ cd adventofcode2018-eclipse/
+    13:14 $ cmake -G 'Eclipse CDT4 - Unix Makefiles' ../adventofcode2018/c++
+    -- The C compiler identification is GNU 8.2.1
+    -- The CXX compiler identification is GNU 8.2.1
+    -- Could not determine Eclipse version, assuming at least 3.6 (Helios). Adjust CMAKE_ECLIPSE_VERSION if this is wrong.
+    -- Check for working C compiler: /usr/lib64/ccache/cc
+    -- Check for working C compiler: /usr/lib64/ccache/cc -- works
+    -- Detecting C compiler ABI info
+    -- Detecting C compiler ABI info - done
+    -- Detecting C compile features
+    -- Detecting C compile features - done
+    -- Check for working CXX compiler: /usr/lib64/ccache/c++
+    -- Check for working CXX compiler: /usr/lib64/ccache/c++ -- works
+    -- Detecting CXX compiler ABI info
+    -- Detecting CXX compiler ABI info - done
+    -- Detecting CXX compile features
+    -- Detecting CXX compile features - done
+    PROJECT_NAME: AdventOfCode2018
+    PROJECT_VERSION: 0.1.0
+    PROJECT_DESCRIPTION: Advent of Code 2018 - C++ with CMake
+
+    PROJECT_SOURCE_DIR: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018/c++
+    PROJECT_BINARY_DIR: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-eclipse
+    CMAKE_INSTALL_PREFIX: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018/c++/_install
+
+    -- Configuring done
+    -- Generating done
+    -- Build files have been written to: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-eclipse
+
+Now it's enough to import `/home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-eclipse`.
+
+From now on, we can regenerate Makefiles, files, resources, ... simply by invoking `cmake` inside `adventofcode2018-eclipse`.
+
+It's good to specify additional options:
+
+    cmake -G 'Eclipse CDT4 - Unix Makefiles' -DCMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_BUILD_TYPE=Debug ../adventofcode2018/c++
+
+* `CMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=TRUE` will create additional `.project` inside source directory to enable source control for a project
+* `CMAKE_BUILD_TYPE` will generate single-configuration - https://cmake.org/cmake/help/v3.12/variable/CMAKE_BUILD_TYPE.html
+
+So here's kind of _canonical_ project generation:
+
+    $ pwd
+    /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-release
+    $ ll -d adventofcode2018*
+    drwxrwxr-x. 5 ggrzybek ggrzybek 4096 12-06 13:44 adventofcode2018
+
+    $ mkdir adventofcode2018-debug adventofcode2018-release
+
+    $ cd adventofcode2018-debug/
+    $ cmake -G 'Eclipse CDT4 - Unix Makefiles' -DCMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_BUILD_TYPE=Debug ../adventofcode2018/c++
+    -- The C compiler identification is GNU 8.2.1
+    -- The CXX compiler identification is GNU 8.2.1
+    -- Could not determine Eclipse version, assuming at least 3.6 (Helios). Adjust CMAKE_ECLIPSE_VERSION if this is wrong.
+    -- Check for working C compiler: /usr/lib64/ccache/cc
+    -- Check for working C compiler: /usr/lib64/ccache/cc -- works
+    -- Detecting C compiler ABI info
+    -- Detecting C compiler ABI info - done
+    -- Detecting C compile features
+    -- Detecting C compile features - done
+    -- Check for working CXX compiler: /usr/lib64/ccache/c++
+    -- Check for working CXX compiler: /usr/lib64/ccache/c++ -- works
+    -- Detecting CXX compiler ABI info
+    -- Detecting CXX compiler ABI info - done
+    -- Detecting CXX compile features
+    -- Detecting CXX compile features - done
+    PROJECT_NAME: aoc2018
+    PROJECT_VERSION: 0.1.0
+    PROJECT_DESCRIPTION: Advent of Code 2018 - C++ with CMake
+    
+    PROJECT_SOURCE_DIR: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018/c++
+    PROJECT_BINARY_DIR: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-debug
+    CMAKE_INSTALL_PREFIX: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018/c++/_install
+    
+    -- Configuring done
+    -- Generating done
+    -- Build files have been written to: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-debug
+    $ cd ../adventofcode2018-release/
+    $ cmake -G 'Eclipse CDT4 - Unix Makefiles' -DCMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=FALSE -DCMAKE_BUILD_TYPE=Release ../adventofcode2018/c++
+    -- The C compiler identification is GNU 8.2.1
+    -- The CXX compiler identification is GNU 8.2.1
+    -- Could not determine Eclipse version, assuming at least 3.6 (Helios). Adjust CMAKE_ECLIPSE_VERSION if this is wrong.
+    -- Check for working C compiler: /usr/lib64/ccache/cc
+    -- Check for working C compiler: /usr/lib64/ccache/cc -- works
+    -- Detecting C compiler ABI info
+    -- Detecting C compiler ABI info - done
+    -- Detecting C compile features
+    -- Detecting C compile features - done
+    -- Check for working CXX compiler: /usr/lib64/ccache/c++
+    -- Check for working CXX compiler: /usr/lib64/ccache/c++ -- works
+    -- Detecting CXX compiler ABI info
+    -- Detecting CXX compiler ABI info - done
+    -- Detecting CXX compile features
+    -- Detecting CXX compile features - done
+    PROJECT_NAME: aoc2018
+    PROJECT_VERSION: 0.1.0
+    PROJECT_DESCRIPTION: Advent of Code 2018 - C++ with CMake
+    
+    PROJECT_SOURCE_DIR: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018/c++
+    PROJECT_BINARY_DIR: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-release
+    CMAKE_INSTALL_PREFIX: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018/c++/_install
+    
+    -- Configuring done
+    -- Generating done
+    -- Build files have been written to: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-release
