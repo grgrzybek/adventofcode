@@ -28,6 +28,7 @@ import (
 )
 
 var file string
+var workersCount int
 
 func init() {
 	var day07Cmd = &cobra.Command{
@@ -36,6 +37,7 @@ func init() {
 		Run:   run,
 	}
 	day07Cmd.Flags().StringVarP(&file, "input", "i", "", "Input file with puzzle data")
+	day07Cmd.Flags().IntVarP(&workersCount, "workers", "w", 5, "Number of workers")
 	aoc2018.RootCmd.AddCommand(day07Cmd)
 }
 
@@ -104,9 +106,15 @@ func run(cmd *cobra.Command, _ []string) {
 			allafters[a][step] = true
 		}
 	}
+	allafters2 := make(map[string]map[string]bool)
+	for step, befores := range allafters {
+		allafters2[step] = befores
+	}
 
 	done := make(map[string]bool)
 	instruction := ""
+
+	// part 1
 
 	for {
 		stepsReady := make([]rune, 0)
@@ -134,7 +142,70 @@ func run(cmd *cobra.Command, _ []string) {
 		}
 	}
 
-	fmt.Printf("Answer 1: %s, Answer 2: %d\n", instruction, 0)
+	// part 2
+
+	workers := make([]*work, workersCount)
+	for k := range workers {
+		workers[k] = &work{step: -1, tick: 0}
+	}
+
+	done = make(map[string]bool)
+	tick := 0
+
+	for {
+		stepsReady := make([]rune, 0)
+		for step, before := range allafters2 {
+			ready := true
+			for b := range before {
+				if _, ok := done[b]; !ok {
+					ready = false
+				}
+			}
+			if ready {
+				stepsReady = append(stepsReady, rune(step[0]))
+			}
+		}
+		if len(stepsReady) > 0 {
+			sort.Slice(stepsReady, func(a, b int) bool { return stepsReady[a] < stepsReady[b] })
+			for _, r := range stepsReady {
+				found := false
+				for _, w := range workers {
+					if w.step == -1 {
+						w.step = r
+						w.tick = 60 + int(r) - int('A') + 1
+						found = true
+						delete(allafters2, string(r))
+						break
+					}
+				}
+				if !found {
+					break
+				}
+			}
+		} else {
+			pending := false
+			for _, w := range workers {
+				if w.tick > 0 {
+					pending = true
+				}
+			}
+			if !pending {
+				break
+			}
+		}
+
+		// ticking
+		for _, w := range workers {
+			w.tick--
+			if w.tick == 0 {
+				done[string(w.step)] = true
+				w.step = -1
+			}
+		}
+		tick++
+	}
+
+	fmt.Printf("Answer 1: %s, Answer 2: %d\n", instruction, tick)
 }
 
 func afterStep(step string, befores map[string]map[string]bool, afters map[string]bool) map[string]bool {
@@ -152,4 +223,9 @@ func afterStep(step string, befores map[string]map[string]bool, afters map[strin
 		}
 	}
 	return result
+}
+
+type work struct {
+	step rune
+	tick int
 }
