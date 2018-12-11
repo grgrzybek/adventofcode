@@ -30,6 +30,7 @@ import (
 	_ "github.com/grgrzybek/adventofcode2018/go/cmd/day08"
 	_ "github.com/grgrzybek/adventofcode2018/go/cmd/day09"
 	_ "github.com/grgrzybek/adventofcode2018/go/cmd/day10"
+	_ "github.com/grgrzybek/adventofcode2018/go/cmd/day11"
 )
 
 func main() {
