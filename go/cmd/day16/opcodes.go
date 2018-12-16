@@ -18,105 +18,121 @@
  */
 package aoc2018
 
-type Opcode func(registers []int, p1, p2, p3 int)
+type Opcode func(registers []int, p1, p2, p3 int) (string, int)
 
 var Opcodes = make([]Opcode, 0)
 
 func InitializeInstructions() {
-	// addr
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		v := registers[p1] + registers[p2]
-		registers[p3] = v
-	})
-	// addi
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		v := registers[p1] + p2
-		registers[p3] = v
-	})
-	// mulr
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		v := registers[p1] * registers[p2]
-		registers[p3] = v
-	})
-	// muli
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		v := registers[p1] * p2
-		registers[p3] = v
-	})
-	// banr
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		v := registers[p1] & registers[p2]
-		registers[p3] = v
-	})
-	// bani
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		v := registers[p1] & p2
-		registers[p3] = v
-	})
-	// borr
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		v := registers[p1] | registers[p2]
-		registers[p3] = v
-	})
-	// bori
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		v := registers[p1] | p2
-		registers[p3] = v
-	})
-	// setr
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		registers[p3] = registers[p1]
-	})
-	// seti
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		registers[p3] = p1
-	})
-	// gtir
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		if p1 > registers[p2] {
-			registers[p3] = 1
-		} else {
-			registers[p3] = 0
-		}
-	})
 	// gtri
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
 		if registers[p1] > p2 {
 			registers[p3] = 1
 		} else {
 			registers[p3] = 0
 		}
+		return "gtri", 0
 	})
-	// gtrr
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		if registers[p1] > registers[p2] {
-			registers[p3] = 1
-		} else {
-			registers[p3] = 0
-		}
-	})
-	// eqir
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		if p1 == registers[p2] {
-			registers[p3] = 1
-		} else {
-			registers[p3] = 0
-		}
-	})
-	// eqri
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
-		if registers[p1] == p2 {
-			registers[p3] = 1
-		} else {
-			registers[p3] = 0
-		}
+	// bani
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		v := registers[p1] & p2
+		registers[p3] = v
+		return "bani", 1
 	})
 	// eqrr
-	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) {
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
 		if registers[p1] == registers[p2] {
 			registers[p3] = 1
 		} else {
 			registers[p3] = 0
 		}
+		return "eqrr", 2
+	})
+	// gtir
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		if p1 > registers[p2] {
+			registers[p3] = 1
+		} else {
+			registers[p3] = 0
+		}
+		return "gtir", 3
+	})
+	// eqir
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		if p1 == registers[p2] {
+			registers[p3] = 1
+		} else {
+			registers[p3] = 0
+		}
+		return "eqir", 4
+	})
+	// bori
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		v := registers[p1] | p2
+		registers[p3] = v
+		return "bori", 5
+	})
+	// seti
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		registers[p3] = p1
+		return "seti", 6
+	})
+	// setr
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		registers[p3] = registers[p1]
+		return "setr", 7
+	})
+	// addr
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		v := registers[p1] + registers[p2]
+		registers[p3] = v
+		return "addr", 8
+	})
+	// borr
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		v := registers[p1] | registers[p2]
+		registers[p3] = v
+		return "borr", 9
+	})
+	// muli
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		v := registers[p1] * p2
+		registers[p3] = v
+		return "muli", 10
+	})
+	// banr
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		v := registers[p1] & registers[p2]
+		registers[p3] = v
+		return "banr", 11
+	})
+	// addi
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		v := registers[p1] + p2
+		registers[p3] = v
+		return "addi", 12
+	})
+	// eqri
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		if registers[p1] == p2 {
+			registers[p3] = 1
+		} else {
+			registers[p3] = 0
+		}
+		return "eqri", 13
+	})
+	// mulr
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		v := registers[p1] * registers[p2]
+		registers[p3] = v
+		return "mulr", 14
+	})
+	// gtrr
+	Opcodes = append(Opcodes, func(registers []int, p1, p2, p3 int) (string, int) {
+		if registers[p1] > registers[p2] {
+			registers[p3] = 1
+		} else {
+			registers[p3] = 0
+		}
+		return "gtrr", 15
 	})
 }

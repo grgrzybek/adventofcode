@@ -80,19 +80,38 @@ func run(cmd *cobra.Command, _ []string) {
 		samples = append(samples, s)
 	}
 
+	language := make(map[int]*Opcode)
+	codes := make(map[int]string)
+
 	result := 0
 	for _, sample := range samples {
 		fmt.Printf("Checking %s\n", sample)
-		n := howManyOpcodes(sample)
+		n, opcode, name, f := howManyOpcodes(sample)
 		if n >= 3 {
 			result++
 		}
+		if f != nil {
+			language[opcode] = f
+			codes[opcode] = *name
+		}
+	}
+
+	fmt.Printf("language:\n")
+	for opcode, f := range language {
+		fmt.Printf("[%d]: %q\n", opcode, f)
+	}
+	for opcode, n := range codes {
+		fmt.Printf("[%d]: %s\n", opcode, n)
 	}
 
 	// skip empty lines
 	for ; scanner.Scan(); {
 		l := scanner.Text()
 		if l != "" {
+			line := make([]int, 4)
+			_, _ = fmt.Sscanf(l, "%d %d %d %d", &line[0], &line[1], &line[2], &line[3])
+			program = append(program, line)
+			fmt.Printf("Broke at line %v\n", l)
 			break
 		}
 	}
@@ -100,23 +119,30 @@ func run(cmd *cobra.Command, _ []string) {
 	// collect sample program lines
 	for ; scanner.Scan(); {
 		l := scanner.Text()
-		if l == "" {
-			break
-		}
 		line := make([]int, 4)
-		_, _ = fmt.Sscanf(l, "%d, %d, %d, %d", &line[0], &line[1], &line[2], &line[3])
+		_, _ = fmt.Sscanf(l, "%d %d %d %d", &line[0], &line[1], &line[2], &line[3])
 		program = append(program, line)
 	}
 
-	fmt.Printf("Answer 1: %d, Answer 2: %d\n", result, 0)
+	fmt.Printf("program length: %d\n", len(program))
+
+	registers := []int{0, 0, 0, 0}
+	for _, l := range program {
+		Opcodes[l[0]](registers, l[1], l[2], l[3])
+	}
+
+	fmt.Printf("Answer 1: %d, Answer 2: %d\n", result, registers[0])
 }
 
-func howManyOpcodes(s *sample) int {
+func howManyOpcodes(s *sample) (int, int, *string, *Opcode) {
 	n := 0
 	regs := make([]int, 4)
+	var matchingOC int
+	var matchingName string
+	var matchingF *Opcode
 	for _, Opcode := range Opcodes {
 		copy(regs, s.before)
-		Opcode(regs, s.instruction[1], s.instruction[2], s.instruction[3])
+		name, _ := Opcode(regs, s.instruction[1], s.instruction[2], s.instruction[3])
 		same := true
 		for i, v := range s.after {
 			if v != regs[i] {
@@ -126,9 +152,16 @@ func howManyOpcodes(s *sample) int {
 		}
 		if same {
 			n++
+			matchingF = &Opcode
+			matchingOC = s.instruction[0]
+			matchingName = name
 		}
 	}
-	return n
+	if n == 1 {
+		return 1, matchingOC, &matchingName, matchingF
+	} else {
+		return n, 0, nil, nil
+	}
 }
 
 type sample struct {
