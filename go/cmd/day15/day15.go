@@ -35,7 +35,8 @@ var cavernMap = make([]string, 0) // to parse initial map
 var cavern []byte
 
 var heroMap = make(map[int]*hero)
-var heroes = make([]*hero, 0)
+var heroesStart = make([]*hero, 0)
+var heroes []*hero
 
 var width, height int
 
@@ -92,97 +93,128 @@ func run(cmd *cobra.Command, _ []string) {
 					h := &hero{id: heroId, kind: rune(row[x]), x: x, y: y, hp: 200, ap: 3, alive: true}
 					heroMap[heroId] = h
 					heroId++
-					heroes = append(heroes, h)
+					heroesStart = append(heroesStart, h)
 				}
 			}
 		}
 	}
 
 	round := 0
+	totalRoundsA1 := 0
+	totalHP := 0
+	totalFHP := 0
+	eap := 3
 
-out:
+outer:
 	for {
-		fmt.Printf("\n===\nStart of Round %d\n", round+1)
-		sortHeroes(heroes)
+		round = 0
+		heroes = make([]*hero, 0)
 
-		var lastTurnMap []byte
-		// each hero has a turn in a range
-		for _, hero := range heroes {
-			if !hero.alive {
-				// hero might've died!
-				continue
+		for _, hs := range heroesStart {
+			h := &hero{id: hs.id, kind: hs.kind, x: hs.x, y: hs.y, hp: 200, ap: 3, alive: true}
+			heroes = append(heroes, h)
+			if h.kind == 'E' {
+				h.ap = eap
 			}
-			// find possible targets
-			enemies := possibleTargets(hero)
-			// find possible targets
-			if len(enemies) == 0 {
-				// no targets / enemies - even unreachable ones
-				break out
-			}
-
-			// find cells within range of all targets
-			cellsNearEnemies, turnMap := cellsNearEnemies(hero, enemies)
-			lastTurnMap = turnMap
-
-			// find reachable cells
-			reachableCells, canAttack := reachableCells(hero, cellsNearEnemies, turnMap)
-			if hero.x == 22 && hero.y == 11 {
-				fmt.Printf("Cells reachable from [%s]: %v\n", hero, reachableCells)
-			}
-
-			if len(reachableCells) == 0 {
-				// end of turn for given hero
-				continue
-			}
-
-			// // if one of the reachable cells is a cell of a hero, we can attack
-			if !canAttack {
-				// move - we already have the cells sorted in both distance and reading order
-				// we just have to find how to start moving to this cell
-				move := shortestPath(hero, turnMap, reachableCells[0][0], reachableCells[0][1])
-				// if hero.x == 22 && hero.y == 11 {
-				// 	fmt.Printf("[%s] will go to: %v\n", hero, move)
-				// }
-				// // move hero one step on chosen path
-				turnMap[hero.y*width+hero.x] = 0
-				hero.x = move[0]
-				hero.y = move[1]
-				if hero.kind == 'E' {
-					turnMap[hero.y*width+hero.x] = 2
-				} else {
-					turnMap[hero.y*width+hero.x] = 3
-				}
-				// fmt.Printf("Moving [%s] to %d:%d\n", hero, hero.x, hero.y)
-			}
-			// time.Sleep(time.Millisecond * 200)
-			// show("[H[2J[3J", turnMap)
-
-			// if there's enemy within range, attack - either after move or instead of move
-			attackNearest(hero, turnMap)
 		}
 
-		// if we didn't "break out", it means there was at least one move or fight
-		round++
-		totalHP := 0
+	out:
+		for {
+			// fmt.Printf("\n===\nStart of Round %d (elves attack power: %d)\n", round+1, eap)
+			sortHeroes(heroes)
 
-		show(fmt.Sprintf("After Round %d:", round), lastTurnMap)
-		for _, h := range heroes {
-			if h.alive {
-				fmt.Printf("hero: %s\n", h)
-				totalHP += h.hp
+			// var lastTurnMap []byte
+			// each hero has a turn in a range
+			for _, hero := range heroes {
+				if !hero.alive {
+					// hero might've died!
+					continue
+				}
+				// find possible targets
+				enemies := possibleTargets(hero)
+				// find possible targets
+				if len(enemies) == 0 {
+					// no targets / enemies - even unreachable ones
+					break out
+				}
+
+				// find cells within range of all targets
+				cellsNearEnemies, turnMap := cellsNearEnemies(hero, enemies)
+				// lastTurnMap = turnMap
+
+				// find reachable cells
+				reachableCells, canAttack := reachableCells(hero, cellsNearEnemies, turnMap)
+
+				if len(reachableCells) == 0 {
+					// end of turn for given hero
+					continue
+				}
+
+				// // if one of the reachable cells is a cell of a hero, we can attack
+				if !canAttack {
+					// move - we already have the cells sorted in both distance and reading order
+					// we just have to find how to start moving to this cell
+					move := shortestPath(hero, turnMap, reachableCells[0][0], reachableCells[0][1])
+					// if hero.x == 22 && hero.y == 11 {
+					// 	fmt.Printf("[%s] will go to: %v\n", hero, move)
+					// }
+					// // move hero one step on chosen path
+					turnMap[hero.y*width+hero.x] = 0
+					hero.x = move[0]
+					hero.y = move[1]
+					if hero.kind == 'E' {
+						turnMap[hero.y*width+hero.x] = 2
+					} else {
+						turnMap[hero.y*width+hero.x] = 3
+					}
+					// fmt.Printf("Moving [%s] to %d:%d\n", hero, hero.x, hero.y)
+				}
+				// time.Sleep(time.Millisecond * 200)
+				// show("[H[2J[3J", turnMap)
+
+				// if there's enemy within range, attack - either after move or instead of move
+				attackNearest(hero, turnMap)
 			}
+
+			// if we didn't "break out", it means there was at least one move or fight
+			round++
+
+			// show(fmt.Sprintf("After Round %d:", round), lastTurnMap)
+		}
+
+		if eap == 3 {
+			totalRoundsA1 = round
+			for _, h := range heroes {
+				if h.alive {
+					// fmt.Printf("hero: %s\n", h)
+					totalHP += h.hp
+				}
+			}
+		}
+
+		cont := false
+		for _, h := range heroes {
+			if h.kind == 'E' && !h.alive {
+				cont = true
+			}
+		}
+
+		if cont {
+			eap++
+			continue
+		} else {
+			break outer
 		}
 	}
 
-	totalHP := 0
 	for _, h := range heroes {
 		if h.alive {
-			fmt.Printf("hero: %s\n", h)
-			totalHP += h.hp
+			// fmt.Printf("hero: %s\n", h)
+			totalFHP += h.hp
 		}
 	}
 
-	fmt.Printf("Answer 1: %d*%d=%d, Answer 2: %d\n", round, totalHP, round * totalHP, 0)
+	fmt.Printf("Answer 1: %d*%d=%d, Answer 2: %d\n", totalRoundsA1, totalHP, totalRoundsA1*totalHP, round*totalFHP)
 }
 
 // returns pointers to enemies - all living enemies despite them being out of range / blocked
@@ -438,9 +470,9 @@ func attackNearest(h *hero, turnMap []byte) {
 	}
 
 	if target != nil {
-		fmt.Printf("Hero %s attacks %s -> ", h, target)
+		// fmt.Printf("Hero %s attacks %s -> ", h, target)
 		target.hp -= h.ap
-		fmt.Printf("%s\n", target)
+		// fmt.Printf("%s\n", target)
 		if target.hp <= 0 {
 			target.alive = false
 		}
