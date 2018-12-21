@@ -38,6 +38,7 @@ import (
 	_ "github.com/grgrzybek/adventofcode2018/go/cmd/day16"
 	_ "github.com/grgrzybek/adventofcode2018/go/cmd/day18"
 	_ "github.com/grgrzybek/adventofcode2018/go/cmd/day19"
+	_ "github.com/grgrzybek/adventofcode2018/go/cmd/day20"
 	_ "github.com/grgrzybek/adventofcode2018/go/cmd/day21"
 )
 
