@@ -18,14 +18,11 @@
  */
 package aoc2018
 
-import "fmt"
-
 type Opcode func(registers []int, p1, p2, p3 int) (string, int)
 
 var Opcodes = make(map[string]Opcode, 0)
 
 func init() {
-	fmt.Println("init for opcodes from day 19")
 	InitializeInstructions()
 }
 
