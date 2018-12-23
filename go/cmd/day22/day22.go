@@ -67,10 +67,10 @@ func run(cmd *cobra.Command, _ []string) {
 
 	// for part 2, we'll calculate a bit more
 
-	// width := (target[0]) + 1
-	// height := (target[1]) + 1
-	width := (target[0]) + 200
+	width := (target[0]) + 400
 	height := (target[1]) * 2
+	// width := (target[0]) + 15
+	// height := (target[1]) + 15
 	fmt.Printf("%d x %d\n", width, height)
 
 	size := (width + 1) * (height + 1)
@@ -139,7 +139,9 @@ func run(cmd *cobra.Command, _ []string) {
 	calculate(regionTypes, regionTimes, check, int(width), int(height), int(target[0]), int(target[1]))
 
 	// torch
-	distance := regionTimes[target[1]*width*3+(target[0]*3)+1]
+	distance1 := regionTimes[target[1]*width*3+(target[0]*3)]
+	distance2 := regionTimes[target[1]*width*3+(target[0]*3)+1]
+	distance3 := regionTimes[target[1]*width*3+(target[0]*3)+2]
 
 	// for y = 0; y < height; y++ {
 	// 	for x = 0; x < width-7; x ++ {
@@ -154,10 +156,10 @@ func run(cmd *cobra.Command, _ []string) {
 	// 	fmt.Println()
 	// }
 
-	fmt.Printf("Answer 1: %d, Answer 2: %d\n", risk, distance)
+	fmt.Printf("Answer 1: %d, Answer 2: %d/%d/%d\n", risk, distance1, distance2, distance3)
 }
 
-func calculate(types []int, times []int, toCheck *list.List, width, height int, tx, ty int) {
+func calculate1(types []int, times []int, toCheck *list.List, width, height int, tx, ty int) {
 	toCheck2 := list.New()
 	for e := toCheck.Front(); e != nil; e = e.Next() {
 		if xye, ok := e.Value.([]int); ok {
@@ -267,6 +269,135 @@ func calculate(types []int, times []int, toCheck *list.List, width, height int, 
 					}
 					if types[y*width+x+1] != narrow {
 						toCheck2.PushBack([]int{x + 1, y, climbingGear, dclimbingGear})
+					}
+				}
+			}
+			// fmt.Print("[H[2J[3J")
+			// for y = 0; y < height; y++ {
+			// 	for x = 0; x < width; x++ {
+			// 		if x == 0 && y == 0 {
+			// 			fmt.Print("[ X ]")
+			// 		} else {
+			// 			fmt.Printf("[%03d]", times[y*width+x] & (0xffff<<16)>>16)
+			// 		}
+			// 	}
+			// 	fmt.Println()
+			// }
+			// time.Sleep(time.Millisecond * 30)
+		}
+	}
+	toCheck.Init()
+	if toCheck2.Len() > 0 {
+		calculate(types, times, toCheck2, width, height, tx, ty)
+	}
+}
+
+func calculate(types []int, times []int, toCheck *list.List, width, height int, tx, ty int) {
+	toCheck2 := list.New()
+	for e := toCheck.Front(); e != nil; e = e.Next() {
+		if xye, ok := e.Value.([]int); ok {
+			x := xye[0] // x of current region
+			y := xye[1] // y of current region
+			e := xye[2] // equipment with which we've entered
+			d := xye[3] // time spent before entering
+
+			idx := y*width*3 + (x * 3)
+
+			proceed := false
+			if e == neither {
+				if times[idx] == -1 || times[idx] > d {
+					times[idx] = d
+					proceed = true
+				}
+			} else if e == torch {
+				if times[idx+1] == -1 || times[idx+1] > d {
+					times[idx+1] = d
+					proceed = true
+				}
+			} else if e == climbingGear {
+				if times[idx+2] == -1 || times[idx+2] > d {
+					times[idx+2] = d
+					proceed = true
+				}
+			}
+
+			// we can go to neighbour cells with equipment permitted in current cell
+			if proceed {
+				delta := 0
+				if e == torch {
+					delta = 1
+				} else if e == climbingGear {
+					delta = 2
+				}
+				// up
+				up := (y-1)*width*3 + (x * 3)
+				down := (y+1)*width*3 + (x * 3)
+				left := y*width*3 + ((x - 1) * 3)
+				right := y*width*3 + ((x + 1) * 3)
+				if y > 0 && (times[up+delta] == -1 || times[up+delta] > d+1) {
+					can := e == neither && types[(y-1)*width+x] != rocky
+					can = can || e == torch && types[(y-1)*width+x] != wet
+					can = can || e == climbingGear && types[(y-1)*width+x] != narrow
+					if can {
+						toCheck2.PushBack([]int{x, y - 1, e, d + 1})
+					}
+				}
+				// down
+				if y < height && (times[down+delta] == -1 || times[down+delta] > d+1) {
+					can := e == neither && types[(y+1)*width+x] != rocky
+					can = can || e == torch && types[(y+1)*width+x] != wet
+					can = can || e == climbingGear && types[(y+1)*width+x] != narrow
+					if can {
+						toCheck2.PushBack([]int{x, y + 1, e, d + 1})
+					}
+				}
+				// left
+				if x > 0 && (times[left+delta] == -1 || times[left+delta] > d+1) {
+					can := e == neither && types[y*width+x-1] != rocky
+					can = can || e == torch && types[y*width+x-1] != wet
+					can = can || e == climbingGear && types[y*width+x-1] != narrow
+					if can {
+						toCheck2.PushBack([]int{x - 1, y, e, d + 1})
+					}
+				}
+				// right
+				if x < width && (times[right+delta] == -1 || times[right+delta] > d+1) {
+					can := e == neither && types[y*width+x+1] != rocky
+					can = can || e == torch && types[y*width+x+1] != wet
+					can = can || e == climbingGear && types[y*width+x+1] != narrow
+					if can {
+						toCheck2.PushBack([]int{x + 1, y, e, d + 1})
+					}
+				}
+				ct := types[y*width+x]
+				if e == neither {
+					// to torch
+					if ct != wet && (times[idx+1] == -1 || times[idx+1] > d+7) {
+						toCheck2.PushBack([]int{x, y, torch, d + 7})
+					}
+					// to climb gear
+					if ct != narrow && (times[idx+2] == -1 || times[idx+2] > d+7) {
+						toCheck2.PushBack([]int{x, y, climbingGear, d + 7})
+					}
+				}
+				if e == torch {
+					// to neither
+					if ct != wet && (times[idx] == -1 || times[idx] > d+7) {
+						toCheck2.PushBack([]int{x, y, neither, d + 7})
+					}
+					// to climb gear
+					if ct != narrow && (times[idx+2] == -1 || times[idx+2] > d+7) {
+						toCheck2.PushBack([]int{x, y, climbingGear, d + 7})
+					}
+				}
+				if e == climbingGear {
+					// to neither
+					if ct != rocky && (times[idx] == -1 || times[idx] > d+7) {
+						toCheck2.PushBack([]int{x, y, neither, d + 7})
+					}
+					// to torch
+					if ct != wet && (times[idx+1] == -1 || times[idx+1] > d+7) {
+						toCheck2.PushBack([]int{x, y, torch, d + 7})
 					}
 				}
 			}
