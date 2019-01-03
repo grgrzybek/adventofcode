@@ -148,13 +148,17 @@ func run(cmd *cobra.Command, _ []string) {
 	// show(dirt, width, height)
 
 	count := 0
+	count2 := 0
 	for _, v := range dirt[miny*width:] {
 		if v == water || v == stream {
 			count++
 		}
+		if v == water {
+			count2++
+		}
 	}
 
-	fmt.Printf("Answer 1: %d, Answer 2: %d\n", count, 0)
+	fmt.Printf("Answer 1: %d, Answer 2: %d\n", count, count2)
 }
 
 // drop starts from x=500,y=0 and returns true if after dropping a unit of water from source, the water
