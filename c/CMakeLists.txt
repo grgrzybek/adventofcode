@@ -27,7 +27,10 @@ set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/_install")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O0 -g")
 
-set(commands day00)
+set(commands
+    day00
+    day01
+)
 
 configure_file(config.h.in "${CMAKE_INSTALL_PREFIX}/include/config.h")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")

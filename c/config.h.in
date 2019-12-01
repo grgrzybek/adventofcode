@@ -18,3 +18,5 @@
  */
 
 #define AOC2019_VERSION "@PROJECT_VERSION@"
+#define PACKAGE_BUGREPORT "gr.grzybek@gmail.com"
+#define PACKAGE_STRING "adventofcode2019 1.0.0"
