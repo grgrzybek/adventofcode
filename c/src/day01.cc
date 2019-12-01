@@ -43,7 +43,6 @@ static void print_help(void);
 int main(int argc, char *argv[]) {
 
 	program_name = argv[0];
-	ios::sync_with_stdio(false);
 
 	int optc, lose = 0;
 	ifstream *input = NULL;
