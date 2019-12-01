@@ -1,0 +1,82 @@
+= Advent of Code 2019
+
+Links:
+
+* https://github.com/15knots/cmake4eclipse
+
+== Building
+
+In simplest scenario, there's
+----
+$ pwd
+/home/ggrzybek/sources/github.com/grgrzybek/adventofcode2019/c
+
+$ ls -1R
+.:
+CMakeLists.txt
+config.h.in
+LICENSE.txt
+readme.adoc
+src
+
+./src:
+day00.cc
+----
+
+In order to build `00types`, just perform:
+----
+$ mkdir build
+
+$ cd build
+
+$ cmake ..
+-- The C compiler identification is GNU 9.2.1
+-- The CXX compiler identification is GNU 9.2.1
+-- Check for working C compiler: /usr/lib64/ccache/cc
+-- Check for working C compiler: /usr/lib64/ccache/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/lib64/ccache/c++
+-- Check for working CXX compiler: /usr/lib64/ccache/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2019/c/build
+
+$ make
+Scanning dependencies of target day00
+[ 50%] Building CXX object CMakeFiles/day00.dir/src/day00.cc.o
+[100%] Linking CXX executable day00
+[100%] Built target day00
+
+$ ./day00 
+./day00:0.1.0
+----
+
+== IDE
+
+In order to open the project in Eclipse with CDT and cmake4eclipse plugin, perform:
+
+* File → New → Project...
+* C++ project (according to help of cmake4eclipse it shouldn't be C/C++ project)
+* Executable/Shared Library/Static Library → Empty Project with Linux GCC (it's irrelevant, as the config comes from `CMakeFiles.txt`)
+* Project name: "hands-on-sys", Location: "/data/sources/github.com/grgrzybek/hands-on-sys" (it's existing location)
+* Choose configurations (Debug, Release)
+* Finish
+* Open Project Properties
+* C/C++ Build page, Builder Settings tab
+** Builder type should be _external builder_
+** Use default build command should be checked
+** Generate Makefiles automatically should be checked
+* C/C++ Build/Tool Chain Editor page
+** CMake Builder (portable) should be selected
+* Build the project in Eclipse - this will generate Makefiles and pass control to CDT (Debug goes to build/Debug, Release goes to Release...)
+
+Additionaly (https://github.com/15knots/cmake4eclipse/issues/45#issuecomment-321658454) to make CDT see jni.h:
+* Project properties → C/C++ General → Preprocessor include paths ... → Providers and check CMAKE_EXPORT_COMPILE_COMMANDS
+
