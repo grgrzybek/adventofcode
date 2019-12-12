@@ -17,108 +17,53 @@
  * under the License.
  */
 
-#include <cstdlib>
 #include <iostream>
-#include <istream>
-#include <ostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 
-#include <getopt.h>
-#include <config.h>
+#include "utils/utils.h"
 
 using namespace std;
 
-static const char *program_name;
-
-static const struct option longopts[] = {
-		{ "help", no_argument, NULL, 'h' },
-		{ "version", no_argument, NULL, 'v' },
-		{ "file", required_argument, NULL, 'f' }
-};
-
-static void print_help(void);
-
 int main(int argc, char *argv[]) {
+	aoc2019::Options options("Day 01", argc, argv);
+	if (!options.check())
+		return options.result();
 
-	program_name = argv[0];
+	cout << "Starting " << options.program_name << endl;
 
-	int optc, lose = 0;
-	ifstream *input = NULL;
-
-	while ((optc = getopt_long(argc, argv, "hvf:", longopts, NULL)) != -1) {
-		switch (optc) {
-		case 'f':
-			input = new ifstream(optarg, ios_base::in);
-			break;
-		case 'h':
-			print_help();
-			return EXIT_SUCCESS;
-		case 'v':
-			printf("%s\n", PACKAGE_STRING);
-			return EXIT_SUCCESS;
-		default:
-			lose = 1;
-		}
-	}
-
-	if (lose || optind < argc || !input) {
-		if (optind < argc) {
-			cerr << program_name << ": extra operand: " << argv[optind] << endl;
-		}
-		cerr << "Try `" << program_name << " --help' for more information." << endl;
-		return EXIT_FAILURE;
-	}
-
-	string line;
-
-	int total_mass = 0;
-	int module_mass = 0;
+	ifstream *input = options.file();
 
 	int fuel1 = 0;
 	int fuel2 = 0;
 
-	while (*input) {
-		getline(*input, line);
-		if (line.length()) {
-			istringstream iss(line);
-			iss >> module_mass;
-			total_mass += module_mass;
-			int _f = (module_mass / 3) - 2;
-			fuel1 += _f;
+	string line;
+	while (getline(*input, line)) {
+		aoc2019::trim(line);
+		int module_mass = 0;
 
-			int added_mass = _f;
-			for (;;) {
-				int _f = (added_mass / 3) - 2;
-				if (_f > 0) {
-					added_mass = _f;
-					fuel2 += _f;
-				} else {
-					break;
-				}
+		// number per line
+		istringstream iss(line);
+		iss >> module_mass;
+
+		int _f = (module_mass / 3) - 2;
+		fuel1 += _f;
+
+		int added_mass = _f;
+		for (;;) {
+			_f = (added_mass / 3) - 2;
+			if (_f > 0) {
+				added_mass = _f;
+				fuel2 += _f;
+			} else {
+				break;
 			}
-
 		}
 	}
-
-	delete input;
 
 	cout << "Answer 1: " << fuel1 << endl;
 	cout << "Answer 2: " << fuel1 + fuel2 << endl;
 
 	return EXIT_SUCCESS;
-}
-
-static void print_help(void) {
-	cout << "Usage: " << program_name << " [OPTION]...\n";
-
-	cout << "Day 01.\n\n";
-
-	cout << "-h, --help      display this help and exit\n";
-	cout << "-v, --version   display version information and exit\n\n";
-
-	cout << "-f, --file=FILE puzzle input (file)\n\n";
-
-	cout << "Report bugs to <" << PACKAGE_BUGREPORT << "." << endl;
 }

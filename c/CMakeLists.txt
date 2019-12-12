@@ -39,15 +39,20 @@ set(commands
     day07b
     day08
     day09
+    day10
 )
 
 configure_file(config.h.in "${CMAKE_INSTALL_PREFIX}/include/config.h")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
+include_directories("${CMAKE_SOURCE_DIR}/include")
+
+add_library(aoc2019 SHARED src/utils/utils.cc)
 
 foreach(cmd ${commands})
     add_executable(${cmd})
     target_sources(${cmd} PUBLIC src/${cmd}.cc)
 endforeach(cmd)
 
-install(TARGETS ${commands} RUNTIME DESTINATION bin)
+target_link_libraries(day01 aoc2019)
 
+install(TARGETS ${commands} RUNTIME DESTINATION bin)

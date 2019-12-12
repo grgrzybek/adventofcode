@@ -17,19 +17,44 @@
  * under the License.
  */
 
-#include <iostream>
-#include <string>
+#ifndef AOC2019_UTILS_H
+#define AOC2019_UTILS_H
 
-#include "config.h"
+#include <getopt.h>
 
-using namespace std;
+namespace aoc2019 {
 
-int main(int argc, char *argv[]) {
+	class Options {
+		int argc;
+		char **argv;
+		const char *day_name;
 
-	char *program_name = argv[0];
-	ios::sync_with_stdio(false);
+		bool _valid = true;
+		bool _finish = false;
+		int exit_code = EXIT_SUCCESS;
 
-	cout << program_name << ":" << AOC2019_VERSION << endl;
+		std::ifstream *input_file = nullptr;
 
-	return 0;
+		void parse();
+
+		void print_help();
+
+	public:
+		const char *program_name = nullptr;
+
+		Options(const char *_day, int _argc, char *_argv[]);
+		~Options();
+
+		bool check();
+
+		int result();
+
+		std::ifstream *file();
+	};
+
+	bool has_text(std::string &line);
+	void trim(std::string &line);
+
 }
+
+#endif //AOC2019_UTILS_H
