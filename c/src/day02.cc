@@ -17,83 +17,38 @@
  * under the License.
  */
 
-#include <cstring>
-#include <cstdlib>
 #include <iostream>
-#include <istream>
-#include <ostream>
 #include <fstream>
 #include <sstream>
 #include <string>
-
 #include <vector>
 
-#include <getopt.h>
-#include <config.h>
+#include "utils/utils.h"
 
 using namespace std;
 
-static const char *program_name;
-
-static const struct option longopts[] = {
-		{ "help", no_argument, NULL, 'h' },
-		{ "version", no_argument, NULL, 'v' },
-		{ "file", required_argument, NULL, 'f' }
-};
-
-static void print_help(void);
 static void state(vector<int> &numbers) __attribute__ ((unused));
 
 int main(int argc, char *argv[]) {
+	aoc2019::Options options("Day 02", argc, argv);
+	if (!options.check())
+		return options.result();
 
-	program_name = argv[0];
-
-	int optc, lose = 0;
-	ifstream *input = NULL;
-
-	while ((optc = getopt_long(argc, argv, "hvf:", longopts, NULL)) != -1) {
-		switch (optc) {
-		case 'f':
-			input = new ifstream(optarg, ios_base::in);
-			break;
-		case 'h':
-			print_help();
-			return EXIT_SUCCESS;
-		case 'v':
-			printf("%s\n", PACKAGE_STRING);
-			return EXIT_SUCCESS;
-		default:
-			lose = 1;
-		}
-	}
-
-	if (lose || optind < argc || !input) {
-		if (optind < argc) {
-			cerr << program_name << ": extra operand: " << argv[optind] << endl;
-		}
-		cerr << "Try `" << program_name << " --help' for more information." << endl;
-		return EXIT_FAILURE;
-	}
-
-	string line;
+	cout << "Starting " << options.program_name << endl;
 
 	vector<int> numbers;
 
-	while (*input) {
-		getline(*input, line);
-		if (line.length()) {
-			string::size_type pos1 = 0;
-			string::size_type pos2 = 0;
-			pos2 = line.find(",", pos1);
-			while ((pos2 = line.find(",", pos1)) != string::npos) {
-				numbers.push_back(std::stoi(line.substr(pos1, pos2 - pos1)));
-				pos1 = pos2+1;
-			}
-			numbers.push_back(std::stoi(line.substr(pos1, line.length())));
+	string line;
+	while (getline(*options.file(), line)) {
+		aoc2019::trim(line);
+		string::size_type pos1 = 0;
+		string::size_type pos2 = 0;
+		while ((pos2 = line.find(',', pos1)) != string::npos) {
+			numbers.push_back(std::stoi(line.substr(pos1, pos2 - pos1)));
+			pos1 = pos2 + 1;
 		}
+		numbers.push_back(std::stoi(line.substr(pos1, line.length())));
 	}
-
-	delete input;
 
 	vector<int> numbers_copy(numbers);
 
@@ -101,21 +56,21 @@ int main(int argc, char *argv[]) {
 	numbers[2] = 2;  // verb
 
 	int pos = 0;
-	int end = 0;
+	bool end1 = false;
 	for (;;) {
 		switch (numbers[pos]) {
 			case 1:
-				numbers[numbers[pos+3]] = numbers[numbers[pos+1]] + numbers[numbers[pos+2]];
+				numbers[numbers[pos + 3]] = numbers[numbers[pos + 1]] + numbers[numbers[pos + 2]];
 				break;
 			case 2:
-				numbers[numbers[pos+3]] = numbers[numbers[pos+1]] * numbers[numbers[pos+2]];
+				numbers[numbers[pos + 3]] = numbers[numbers[pos + 1]] * numbers[numbers[pos + 2]];
 				break;
 			case 99:
-				end = 1;
+				end1 = true;
 				break;
 		}
 		pos += 4;
-		if (end) {
+		if (end1) {
 			break;
 		}
 	}
@@ -124,38 +79,37 @@ int main(int argc, char *argv[]) {
 
 	int n = 0;
 	int v = 0;
-	end = 0;
 	for (;;) {
-		int end2 = 0;
+		bool end2 = false;
 		for (n = 0; n <= 99 && !end2; n++) {
 			cout << "noun: " << n << endl;
 			for (v = 0; v <= 99 && !end2; v++) {
 				numbers.assign(numbers_copy.begin(), numbers_copy.end());
 				numbers[1] = n; // noun
 				numbers[2] = v; // verb
-				int pos = 0;
-				int end = 0;
+				pos = 0;
+				end1 = false;
 				for (;;) {
 					switch (numbers[pos]) {
 						case 1:
-							numbers[numbers[pos+3]] = numbers[numbers[pos+1]] + numbers[numbers[pos+2]];
+							numbers[numbers[pos + 3]] = numbers[numbers[pos + 1]] + numbers[numbers[pos + 2]];
 							break;
 						case 2:
-							numbers[numbers[pos+3]] = numbers[numbers[pos+1]] * numbers[numbers[pos+2]];
+							numbers[numbers[pos + 3]] = numbers[numbers[pos + 1]] * numbers[numbers[pos + 2]];
 							break;
 						case 99:
-							end = 1;
+							end1 = true;
 							break;
 					}
 					pos += 4;
-					if (end) {
+					if (end1) {
 						break;
 					}
 				}
 				if (numbers[0] == 19690720) {
 					n--;
 					v--;
-					end2 = 1;
+					end2 = true;
 				}
 			}
 		}
@@ -170,19 +124,6 @@ int main(int argc, char *argv[]) {
 	cout << "Answer 2: " << answer2 << endl;
 
 	return EXIT_SUCCESS;
-}
-
-static void print_help(void) {
-	cout << "Usage: " << program_name << " [OPTION]...\n";
-
-	cout << "Day 02.\n\n";
-
-	cout << "-h, --help      display this help and exit\n";
-	cout << "-v, --version   display version information and exit\n\n";
-
-	cout << "-f, --file=FILE puzzle input (file)\n\n";
-
-	cout << "Report bugs to <" << PACKAGE_BUGREPORT << "." << endl;
 }
 
 void state(vector<int> &numbers) {

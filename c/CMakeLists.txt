@@ -51,8 +51,7 @@ add_library(aoc2019 SHARED src/utils/utils.cc)
 foreach(cmd ${commands})
     add_executable(${cmd})
     target_sources(${cmd} PUBLIC src/${cmd}.cc)
+    target_link_libraries(${cmd} aoc2019)
 endforeach(cmd)
-
-target_link_libraries(day01 aoc2019)
 
 install(TARGETS ${commands} RUNTIME DESTINATION bin)
