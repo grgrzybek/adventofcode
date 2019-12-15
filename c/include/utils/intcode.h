@@ -108,6 +108,15 @@ namespace aoc2019 {
 		inline void debug(bool d) {
 			this->_debug = d;
 		}
+
+		inline long long *get_memory() {
+			return this->memory;
+		}
+
+		inline void reset() {
+			this->ip = 0;
+			this->finished = false;
+		}
 	};
 
 }
