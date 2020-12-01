@@ -1,0 +1,10 @@
+= Advent of Code 2020 - Go-Lang
+
+This directory contains aoc2020 solutions in go-lang.
+
+== Development
+
+    go mod init
+    go get github.com/spf13/cobra
+    make
+    bin/aoc2020 dayNN -f assets/dayNN.txt
