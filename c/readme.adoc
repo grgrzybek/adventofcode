@@ -1,0 +1,10 @@
+= Advent of Code 2020 - C++
+
+This directory contains aoc2020 solutions in C/C++.
+
+== Development
+
+    
+    
+    
+    
