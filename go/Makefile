@@ -17,7 +17,8 @@
 # under the License.
 #
 
-FILES = internal/pkg/day01/day01.go
+FILES = internal/pkg/day01/day01.go \
+	internal/pkg/day02/day02.go
 
 all: bin/hello bin/aoc2020
 
