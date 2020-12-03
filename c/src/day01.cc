@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	// part 1
+	// part 2
 
 	idx1 = 0;
 	int n2a = 0, n2b = 0, n2c = 0;
