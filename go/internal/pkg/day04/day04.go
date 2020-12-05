@@ -122,7 +122,6 @@ func run(cmd *cobra.Command, _ []string) {
 		fmt.Printf("> %s: %v\n", p, p.isValid2())
 	}
 
-	// Answer 1: 237, Answer 2: 2106818610
 	fmt.Printf("Answer 1: %d, Answer 2: %d\n", count1, count2)
 }
 
