@@ -104,7 +104,7 @@ namespace aoc2020 {
 	 * If options tell that puzzle should not be solved, returns program exit code
 	 * @return
 	 */
-	int Options::result() {
+	int Options::result() const {
 		return exit_code;
 	}
 

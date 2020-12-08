@@ -47,7 +47,7 @@ namespace aoc2020 {
 
 		bool check();
 
-		int result();
+		[[nodiscard]] int result() const;
 
 		std::ifstream *file();
 	};
