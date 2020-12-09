@@ -161,6 +161,6 @@ func run(cmd *cobra.Command, _ []string) {
 		}
 	}
 
-	// answer1 = 1584, answer2 = 0
+	// answer1 = 1584, answer2 = 920
 	fmt.Printf("Answer 1: %d, Answer 2: %d\n", acc1, acc2)
 }
