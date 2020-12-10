@@ -17,7 +17,8 @@
 # under the License.
 #
 
-FILES = internal/pkg/day01/day01.go \
+FILES = \
+	internal/pkg/day01/day01.go \
 	internal/pkg/day02/day02.go \
 	internal/pkg/day03/day03.go \
 	internal/pkg/day04/day04.go \
@@ -25,14 +26,16 @@ FILES = internal/pkg/day01/day01.go \
 	internal/pkg/day06/day06.go \
 	internal/pkg/day07/day07.go \
 	internal/pkg/day08/day08.go \
-	internal/pkg/day09/day09.go
+	internal/pkg/day09/day09.go \
+	internal/pkg/day10/day10.go \
+	cmd/aoc2020/main.go
 
 all: bin/hello bin/aoc2020
 
 bin/hello: cmd/hello/main.go
 	go build -o bin/hello github.com/grgrzybek/adventofcode2020/cmd/hello
 
-bin/aoc2020: cmd/aoc2020/main.go $(FILES)
+bin/aoc2020: $(FILES)
 	go build -o bin/aoc2020 github.com/grgrzybek/adventofcode2020/cmd/aoc2020
 
 clean:
