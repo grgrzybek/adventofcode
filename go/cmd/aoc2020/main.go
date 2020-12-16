@@ -35,6 +35,7 @@ import (
 	_ "github.com/grgrzybek/adventofcode2020/internal/pkg/day13"
 	_ "github.com/grgrzybek/adventofcode2020/internal/pkg/day14"
 	_ "github.com/grgrzybek/adventofcode2020/internal/pkg/day15"
+	_ "github.com/grgrzybek/adventofcode2020/internal/pkg/day16"
 )
 
 func main() {
