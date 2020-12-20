@@ -251,20 +251,20 @@ func run(cmd *cobra.Command, _ []string) {
 	images[7] = t1.properPiece
 	t1.properPiece = nil
 
-	for y := 0; y < len(images[0]); y++ {
-		for i := 0; i < 4; i++ {
-			fmt.Printf("%s   ", images[i][y])
-		}
-		fmt.Println()
-	}
-	fmt.Println()
-	for y := 0; y < len(images[0]); y++ {
-		for i := 4; i < 8; i++ {
-			fmt.Printf("%s   ", images[i][y])
-		}
-		fmt.Println()
-	}
-	fmt.Println()
+	// for y := 0; y < len(images[0]); y++ {
+	// 	for i := 0; i < 4; i++ {
+	// 		fmt.Printf("%s   ", images[i][y])
+	// 	}
+	// 	fmt.Println()
+	// }
+	// fmt.Println()
+	// for y := 0; y < len(images[0]); y++ {
+	// 	for i := 4; i < 8; i++ {
+	// 		fmt.Printf("%s   ", images[i][y])
+	// 	}
+	// 	fmt.Println()
+	// }
+	// fmt.Println()
 
 	monster := make([]string, 3)
 	monster[0] = "                  # "
@@ -279,6 +279,7 @@ func run(cmd *cobra.Command, _ []string) {
 	for _, img := range images {
 		v := hashTilesNotMonsters(img, monster, W, H, MW, MH)
 		if v > 0 {
+
 			v2 = v
 			break
 		}
@@ -305,7 +306,7 @@ func hashTilesNotMonsters(img []string, monster []string, w int, h int, mw int, 
 					for dy := y; dy < y+mh; dy++ {
 						for dx := x; dx < x+mw; dx++ {
 							if monster[dy-y][dx-x] == '#' {
-								img2[dy][dx] = '.'
+								img2[dy][dx] = 'o'
 							}
 						}
 					}
@@ -331,6 +332,15 @@ func hashTilesNotMonsters(img []string, monster []string, w int, h int, mw int, 
 					hashes++
 				}
 			}
+		}
+		for _, line := range img2 {
+			for _, r := range line {
+				if r == '#' {
+					r = ','
+				}
+				fmt.Printf("%c", r)
+			}
+			fmt.Println()
 		}
 		return hashes
 	}
