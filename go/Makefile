@@ -42,6 +42,7 @@ FILES = \
 	internal/pkg/day22/day22.go \
 	internal/pkg/day23/day23.go \
 	internal/pkg/day24/day24.go \
+	internal/pkg/day25/day25.go \
 	cmd/aoc2020/main.go
 
 all: bin/hello bin/aoc2020
