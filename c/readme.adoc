@@ -1,0 +1,5 @@
+= Advent of Code 2021 - C++
+
+This directory contains aoc2021 solutions in C/C++.
+
+== Development
