@@ -27,7 +27,7 @@ using namespace std;
 using namespace aoc2021;
 
 int main(int argc, char *argv[]) {
-    Options options("Day 03", argc, argv);
+    Options options("Day 06", argc, argv);
     if (!options.check())
         return options.result();
 

@@ -29,7 +29,7 @@ using namespace aoc2021;
 void print_board(int *&board);
 
 int main(int argc, char *argv[]) {
-    Options options("Day 03", argc, argv);
+    Options options("Day 04", argc, argv);
     if (!options.check())
         return options.result();
 
