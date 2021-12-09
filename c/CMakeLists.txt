@@ -31,12 +31,17 @@ set(commands
     day04
     day05
     day06
+    day07
     day08
+    day09
 )
 
 configure_file(config.h.in "${CMAKE_INSTALL_PREFIX}/include/config.h")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
 include_directories("${CMAKE_SOURCE_DIR}/include")
+
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
 
 add_library(aoc2021 SHARED src/utils/utils.cc)
 
@@ -45,5 +50,6 @@ foreach(cmd ${commands})
     target_sources(${cmd} PUBLIC src/${cmd}.cc)
     target_link_libraries(${cmd} aoc2021)
 endforeach(cmd)
+target_link_libraries(day09 ${SDL2_LIBRARIES})
 
 install(TARGETS ${commands} RUNTIME DESTINATION bin)
