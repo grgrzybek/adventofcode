@@ -113,9 +113,7 @@ int main(int argc, char *argv[]) {
     bool run = true;
     while (run) {
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                SDL_DestroyWindow(window);
-                SDL_Quit();
+            if (event.type == SDL_KEYUP) {
                 run = false;
             }
         }
@@ -129,6 +127,31 @@ int main(int argc, char *argv[]) {
             int v0 = map[width * y + x];
             if (v0 != -1 && v0 < 9) {
                 pool_sizes.push_back(make_pool(map, x, y, width, height));
+            }
+        }
+    }
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int v0 = map[width * y + x];
+            SDL_Rect rect { .x = x*4, .y = y*4, .w = 4, .h = 4 };
+            if (v0 == -1) {
+                SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 0x90, 0x90, 0x88));
+            } else {
+                SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
+            }
+        }
+    }
+
+    SDL_UpdateWindowSurface(window);
+
+    run = true;
+    while (run) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                SDL_DestroyWindow(window);
+                SDL_Quit();
+                run = false;
             }
         }
     }
