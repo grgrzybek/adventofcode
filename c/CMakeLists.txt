@@ -45,6 +45,9 @@ include_directories("${CMAKE_SOURCE_DIR}/include")
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
+find_package(PNG REQUIRED)
+include_directories(${PNG_INCLUDE_DIRS})
+
 add_library(aoc2021 SHARED src/utils/utils.cc)
 
 foreach(cmd ${commands})
@@ -53,5 +56,6 @@ foreach(cmd ${commands})
     target_link_libraries(${cmd} aoc2021)
 endforeach(cmd)
 target_link_libraries(day09 ${SDL2_LIBRARIES})
+target_link_libraries(day11 ${PNG_LIBRARIES})
 
 install(TARGETS ${commands} RUNTIME DESTINATION bin)
