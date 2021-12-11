@@ -30,7 +30,7 @@ using namespace aoc2021;
 int make_pool(int *map, int x, int y, int width, int height);
 
 int main(int argc, char *argv[]) {
-    Options options("Day 08", argc, argv);
+    Options options("Day 09", argc, argv);
     if (!options.check())
         return options.result();
 
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
             if (v0 == -1) {
                 SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 0x90, 0x90, 0x88));
             } else {
-                SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
+                SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 0x90, 0x00, 0x00));
             }
         }
     }
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
     run = true;
     while (run) {
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
+            if (event.type == SDL_KEYUP) {
                 SDL_DestroyWindow(window);
                 SDL_Quit();
                 run = false;
