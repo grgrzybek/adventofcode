@@ -19,6 +19,7 @@
 #ifndef AOC2021_UTILS_H
 #define AOC2021_UTILS_H
 
+#include <fstream>
 #include <getopt.h>
 
 namespace aoc2021 {
