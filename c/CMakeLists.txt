@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 
 project(aoc2021 VERSION 1.0.0
                 DESCRIPTION "Advent of Code 2021 - C++ with CMake"
@@ -36,6 +36,7 @@ set(commands
     day09
     day10
     day11
+    day13
 )
 
 configure_file(config.h.in "${CMAKE_INSTALL_PREFIX}/include/config.h")
