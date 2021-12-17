@@ -16,16 +16,18 @@
 
 #include <iostream>
 #include <limits>
+#include <list>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "utils/utils.h"
 
-void calculate_distances_from(int map[], int distances[], int width, int height, int x, int y);
-
 using namespace std;
 using namespace aoc2021;
+
+void calculate_distances(const int *map, int *distances, int width, int height, int start, list<int> &to_check,
+                         set<int> &to_check_set);
 
 int main(int argc, char *argv[]) {
     Options options("Day 15", argc, argv);
@@ -74,29 +76,111 @@ int main(int argc, char *argv[]) {
     }
     distances[0] = 0;
 
-    calculate_distances_from(map, distances, width, height, 0, 0);
+    set<int> to_check_set;
+    to_check_set.emplace(0);
+    list<int> to_check;
+    to_check.push_back(0);
+    int distance = 1;
+    while (!to_check.empty()) {
+        calculate_distances(map, distances, width, height, distance < width ? distance++ : -1, to_check, to_check_set);
+    }
 
     int answer1 = distances[width * height - 1];
 
     // part 2
 
-    int answer2 = 0;
+    int width2 = width * 5;
+    int height2 = height * 5;
+    int map2[width2 * height2];
+
+    x = 0, y = 0;
+    int v, v1;
+    for (auto &l: lines) {
+        x = 0;
+        for (auto &c: l) {
+            v = c - '0';
+            for (int y1 = 0; y1 < 5; y1++) {
+                for (int x1 = 0; x1 < 5; x1++) {
+                    v1 = v + y1 + x1;
+                    while (v1 > 9) {
+                        v1 -= 9;
+                    }
+                    map2[(y + height * y1) * width2 + (x + width * x1)] = v1;
+                }
+            }
+            x++;
+        }
+        y++;
+    }
+
+    int *distances2 = new int[width2 * height2];
+    for (int i = 0; i < width2 * height2; i++) {
+        distances2[i] = numeric_limits<int>::max();
+    }
+    distances2[0] = 0;
+
+    to_check_set.clear();
+    to_check_set.emplace(0);
+    to_check.clear();
+    to_check.push_back(0);
+    distance = 1;
+    while (!to_check.empty()) {
+        calculate_distances(map2, distances2, width2, height2, distance < width2 ? distance++ : -1, to_check, to_check_set);
+    }
+
+    int answer2 = distances2[width2 * height2 - 1];
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
 
+    delete[] distances2;
+
     return EXIT_SUCCESS;
 }
 
-// This function is always called for a point with a distance (total risk) already set
-void calculate_distances_from(int map[], int distances[], int width, int height, int x, int y) { // NOLINT(misc-no-recursion)
+void calculate_distances(const int *map, int *distances, int width, int height, int start, list<int> &to_check,
+                         set<int> &to_check_set) { // NOLINT(misc-no-recursion)
+    if (to_check.empty()) {
+        return;
+    }
+    int xy = *(to_check.begin());
+    int x = xy >> 16;
+    int y = xy & 0xFFFF;
+
+    to_check.pop_front();
+    to_check_set.erase(xy);
+
+    // first, if needed, add right and bottom points to check
+    if (start >= 0 && start < width) {
+        for (int _y = 0; _y <= start; _y++) {
+            int v = start << 16 | _y;
+            if (!to_check_set.contains(v)) {
+                to_check.push_back(v);
+                to_check_set.emplace(v);
+            }
+        }
+        for (int _x = 0; _x <= start; _x++) {
+            int v = _x << 16 | start;
+            if (!to_check_set.contains(v)) {
+                to_check.push_back(v);
+                to_check_set.emplace(v);
+            }
+        }
+    }
+
+    // change surronding points
+
     int d = distances[width * y + x];
     if (x > 0) {
         int risk_left = map[width * y + x - 1];
         int distance_left = distances[width * y + x - 1];
         if (distance_left > risk_left + d) {
             distances[width * y + x - 1] = risk_left + d;
-            calculate_distances_from(map, distances, width, height, x - 1, y);
+            int v = (x - 1) << 16 | y;
+            if (!to_check_set.contains(v)) {
+                to_check.push_back(v);
+                to_check_set.emplace(v);
+            }
         }
     }
     if (x < width - 1) {
@@ -104,7 +188,11 @@ void calculate_distances_from(int map[], int distances[], int width, int height,
         int distance_right = distances[width * y + x + 1];
         if (distance_right > risk_right + d) {
             distances[width * y + x + 1] = risk_right + d;
-            calculate_distances_from(map, distances, width, height, x + 1, y);
+            int v = (x + 1) << 16 | y;
+            if (!to_check_set.contains(v)) {
+                to_check.push_back(v);
+                to_check_set.emplace(v);
+            }
         }
     }
     if (y > 0) {
@@ -112,7 +200,11 @@ void calculate_distances_from(int map[], int distances[], int width, int height,
         int distance_top = distances[width * (y - 1) + x];
         if (distance_top > risk_top + d) {
             distances[width * (y - 1) + x] = risk_top + d;
-            calculate_distances_from(map, distances, width, height, x, y - 1);
+            int v = x << 16 | (y - 1);
+            if (!to_check_set.contains(v)) {
+                to_check.push_back(v);
+                to_check_set.emplace(v);
+            }
         }
     }
     if (y < height - 1) {
@@ -120,7 +212,11 @@ void calculate_distances_from(int map[], int distances[], int width, int height,
         int distance_bottom = distances[width * (y + 1) + x];
         if (distance_bottom > risk_bottom + d) {
             distances[width * (y + 1) + x] = risk_bottom + d;
-            calculate_distances_from(map, distances, width, height, x, y + 1);
+            int v = x << 16 | (y + 1);
+            if (!to_check_set.contains(v)) {
+                to_check.push_back(v);
+                to_check_set.emplace(v);
+            }
         }
     }
 }
