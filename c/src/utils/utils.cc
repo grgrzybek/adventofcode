@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <fstream>
 #include <cstring>
 #include <iostream>
 
@@ -93,7 +92,7 @@ namespace aoc2021 {
      * Checks whether to continue with puzzle or to exit immediately.
      * @return
      */
-    bool Options::check() {
+    bool Options::check() const {
         return _valid && !_finish;
     }
 

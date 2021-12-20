@@ -43,6 +43,8 @@ set(commands
     day16
     day17
     day18
+    day19
+    day20
 )
 
 configure_file(config.h.in "${CMAKE_INSTALL_PREFIX}/include/config.h")
@@ -64,5 +66,6 @@ foreach(cmd ${commands})
 endforeach(cmd)
 target_link_libraries(day09 ${SDL2_LIBRARIES})
 target_link_libraries(day11 ${PNG_LIBRARIES})
+target_link_libraries(day20 ${PNG_LIBRARIES})
 
 install(TARGETS ${commands} RUNTIME DESTINATION bin)

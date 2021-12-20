@@ -45,7 +45,7 @@ namespace aoc2021 {
 		Options(const char *_day, int _argc, char *_argv[]);
 		~Options();
 
-		bool check();
+		[[nodiscard]] bool check() const;
 
 		[[nodiscard]] int result() const;
 
