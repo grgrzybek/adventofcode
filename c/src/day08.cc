@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        char a, b = '.', c = '.', d = '.', e = '.', f = '.', g = '.';
+        char d = '.', e = '.', g = '.';
 
         /*
          *  aaa           aaa    aaa           aaa    aaa    aaa    aaa    aaa
@@ -125,7 +125,6 @@ int main(int argc, char *argv[]) {
         remove_if(_s7.begin(), _s7.end(), [s](char c) { // NOLINT(bugprone-unused-return-value)
             return s[1].find(c) != string::npos;
         });
-        a = *_s7.begin();
 
         // we have segment a
         // we have 1, 4, 7, 8
