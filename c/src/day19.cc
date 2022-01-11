@@ -133,14 +133,10 @@ struct single_scanner {
     // each vector has the same size as this->beacons vector
     coord_list_p *s2b;
 
-    explicit single_scanner(int id) : id(id), resolved(false), resolved_view(-1), beacons(nullptr), b2b(nullptr), s2b(nullptr) {}
+    explicit single_scanner(int id) : id(id), resolved(false), resolved_view(-1), position(nullptr), beacons(nullptr),
+                                      b2b(nullptr), s2b(nullptr) {}
 
-    ~single_scanner() {
-        unsigned int count = beacons->size();
-        for (auto *&coords: *beacons) {
-            delete coords;
-        }
-        delete beacons;
+    void deleteMaps(unsigned int count) const {
         for (unsigned int i = 0; i < count; i++) {
             for (unsigned int j = 0; j < 24; j++) {
                 for (auto *&c: *b2b[i][j]) {
@@ -160,6 +156,15 @@ struct single_scanner {
             delete s2b[j];
         }
         delete[] s2b;
+    }
+
+    ~single_scanner() {
+        unsigned int count = beacons->size();
+        for (auto *&coords: *beacons) {
+            delete coords;
+        }
+        delete beacons;
+        deleteMaps(count);
         delete position;
     }
 
@@ -189,7 +194,25 @@ struct single_scanner {
         return oss.str();
     }
 
-    void initialize() const {
+    void initialize() {
+        sort(this->beacons->begin(), this->beacons->end(), rc_less());
+        // prepare all information about previously parsed scanner data
+        this->b2b = new single_scanner::coord_list_views[this->beacons->size()];
+//        cout << "Created coord_list_views[" << s->beacons->size() << "] " << (void *)s->b2b << endl;
+        for (vector<relative_coords *>::size_type pos = 0; pos < this->beacons->size(); pos++) {
+            // creating 24 vectors
+            this->b2b[pos] = new single_scanner::coord_list_p[24];
+//            cout << "Created (" << pos << ") coord_list_p " << (void *)s->b2b[pos] << endl;
+            for (int i = 0; i < 24; i++) {
+                this->b2b[pos][i] = new single_scanner::coord_list;
+//                cout << "Created (" << pos << ", " << i << ") coord_list " << (void *)s->b2b[pos][i] << endl;
+            }
+        }
+        this->s2b = new single_scanner::coord_list_p[24];
+        for (int i = 0; i < 24; i++) {
+            this->s2b[i] = new single_scanner::coord_list;
+        }
+
         // this scanner knows its beacons, time to prepare views of the beacons from other beacons
         int b = 0;
         for (auto *&coords: *beacons) {
@@ -220,22 +243,22 @@ struct single_scanner {
             s2b[5]->push_back(new relative_coords{.x=y, .y=x, .z=-z});
             s2b[6]->push_back(new relative_coords{.x=x, .y=-y, .z=-z});
             s2b[7]->push_back(new relative_coords{.x=-y, .y=-x, .z=-z});
-            s2b[8]->push_back(new relative_coords{.x=x, .y=y, .z=z});
-            s2b[9]->push_back(new relative_coords{.x=-z, .y=y, .z=x});
-            s2b[10]->push_back(new relative_coords{.x=-x, .y=y, .z=-z});
-            s2b[11]->push_back(new relative_coords{.x=z, .y=y, .z=-x});
-            s2b[12]->push_back(new relative_coords{.x=x, .y=-y, .z=-z});
-            s2b[13]->push_back(new relative_coords{.x=-z, .y=-y, .z=-x});
-            s2b[14]->push_back(new relative_coords{.x=-x, .y=-y, .z=z});
-            s2b[15]->push_back(new relative_coords{.x=z, .y=-y, .z=x});
-            s2b[16]->push_back(new relative_coords{.x=x, .y=y, .z=z});
-            s2b[17]->push_back(new relative_coords{.x=x, .y=z, .z=-y});
-            s2b[18]->push_back(new relative_coords{.x=x, .y=-y, .z=-z});
-            s2b[19]->push_back(new relative_coords{.x=x, .y=-z, .z=y});
-            s2b[20]->push_back(new relative_coords{.x=-x, .y=-y, .z=z});
-            s2b[21]->push_back(new relative_coords{.x=-x, .y=-z, .z=-y});
-            s2b[22]->push_back(new relative_coords{.x=-x, .y=y, .z=-z});
-            s2b[23]->push_back(new relative_coords{.x=-x, .y=z, .z=y});
+            s2b[8]->push_back(new relative_coords{.x=x, .y=z, .z=-y});
+            s2b[9]->push_back(new relative_coords{.x=z, .y=-x, .z=-y});
+            s2b[10]->push_back(new relative_coords{.x=-x, .y=-z, .z=-y});
+            s2b[11]->push_back(new relative_coords{.x=-z, .y=x, .z=-y});
+            s2b[12]->push_back(new relative_coords{.x=-x, .y=z, .z=y});
+            s2b[13]->push_back(new relative_coords{.x=z, .y=x, .z=y});
+            s2b[14]->push_back(new relative_coords{.x=x, .y=-z, .z=y});
+            s2b[15]->push_back(new relative_coords{.x=-z, .y=-x, .z=y});
+            s2b[16]->push_back(new relative_coords{.x=z, .y=y, .z=-x});
+            s2b[17]->push_back(new relative_coords{.x=y, .y=-z, .z=-x});
+            s2b[18]->push_back(new relative_coords{.x=-z, .y=-y, .z=-x});
+            s2b[19]->push_back(new relative_coords{.x=-y, .y=z, .z=-x});
+            s2b[20]->push_back(new relative_coords{.x=y, .y=z, .z=x});
+            s2b[21]->push_back(new relative_coords{.x=z, .y=-y, .z=x});
+            s2b[22]->push_back(new relative_coords{.x=-y, .y=-z, .z=x});
+            s2b[23]->push_back(new relative_coords{.x=-z, .y=y, .z=x});
         }
     }
 
@@ -244,7 +267,7 @@ struct single_scanner {
         int dx = c2->x - c1->x;
         int dy = c2->y - c1->y;
         int dz = c2->z - c1->z;
-        // fixed z for { 1, 2, 3 } (e.g., { 1, 1, 1 } beacon looks at { 2, 3, 4 })
+        // fixed z for { 1, 2, 3 } (front:up, right:right, top:viewer) (e.g., { 1, 1, 1 } beacon looks at { 2, 3, 4 })
         // { x, y, z } { 1, 2, 3 }
         // { -y, x, z } { -2, 1, 3 }
         // { -x, -y, z } { -1, -2, 3 }
@@ -262,55 +285,43 @@ struct single_scanner {
         views24[5]->push_back(new relative_coords{.x=dy, .y=dx, .z=-dz});
         views24[6]->push_back(new relative_coords{.x=dx, .y=-dy, .z=-dz});
         views24[7]->push_back(new relative_coords{.x=-dy, .y=-dx, .z=-dz});
-        // fixed y for { 1, 2, 3 } (e.g., { 1, 1, 1 } beacon looks at { 2, 3, 4 })
-        // { x, y, z } { 1, 2, 3 }
-        // { -z, y, x } { -3, 2, 1 }
-        // { -x, y, -z } { -1, 2, -3 }
-        // { z, y, -x } { 3, 2, -1 }
-        // fixed y (flipped by X - Y and Z change the signs) { 1, 2, 3 } changes to { 1, -2, -3 }
-        // { x, -y, -z } { 1, -2, -3 }
-        // { -z, -y, -x } { -3, -2, -1 }
-        // { -x, -y, z } { -1, -2, 3 }
-        // { z, -y, x } { 3, -2, 1 }
-        views24[8]->push_back(new relative_coords{.x=dx, .y=dy, .z=dz});
-        views24[9]->push_back(new relative_coords{.x=-dz, .y=dy, .z=dx});
-        views24[10]->push_back(new relative_coords{.x=-dx, .y=dy, .z=-dz});
-        views24[11]->push_back(new relative_coords{.x=dz, .y=dy, .z=-dx});
-        views24[12]->push_back(new relative_coords{.x=dx, .y=-dy, .z=-dz});
-        views24[13]->push_back(new relative_coords{.x=-dz, .y=-dy, .z=-dx});
-        views24[14]->push_back(new relative_coords{.x=-dx, .y=-dy, .z=dz});
-        views24[15]->push_back(new relative_coords{.x=dz, .y=-dy, .z=dx});
-        // fixed x for { 1, 2, 3 } (e.g., { 1, 1, 1 } beacon looks at { 2, 3, 4 })
-        // { x, y, z } { 1, 2, 3 }
         // { x, z, -y } { 1, 3, -2 }
-        // { x, -y, -z } { 1, -2, -3 }
-        // { x, -z, y } { 1, -3, 2 }
-        // fixed x (flipped by Z - X and Y change the signs) { 1, 2, 3 } changes to { -1, -2, 3 }
-        // { -x, -y, z } { -1, -2, 3 }
+        // { z, -x, -y } { 3, -1, -2 }
         // { -x, -z, -y } { -1, -3, -2 }
-        // { -x, y, -z } { -1, 2, -3 }
+        // { -z, x, -y } { -3, 1, -2 }
         // { -x, z, y } { -1, 3, 2 }
-        views24[16]->push_back(new relative_coords{.x=dx, .y=dy, .z=dz});
-        views24[17]->push_back(new relative_coords{.x=dx, .y=dz, .z=-dy});
-        views24[18]->push_back(new relative_coords{.x=dx, .y=-dy, .z=-dz});
-        views24[19]->push_back(new relative_coords{.x=dx, .y=-dz, .z=dy});
-        views24[20]->push_back(new relative_coords{.x=-dx, .y=-dy, .z=dz});
-        views24[21]->push_back(new relative_coords{.x=-dx, .y=-dz, .z=-dy});
-        views24[22]->push_back(new relative_coords{.x=-dx, .y=dy, .z=-dz});
-        views24[23]->push_back(new relative_coords{.x=-dx, .y=dz, .z=dy});
-        // actually only 16 are unique
-//        for (int i = 0; i < 24; i++) {
-//            cout << "    - [" << setw(2) << (i + 1) << "]" << setw(0) << ": ";
-//            for (auto *&c: *views24[i]) {
-//                cout << static_cast<string>(*c) << " ";
-//            }
-//            cout << endl;
-//        }
+        // { z, x, y } { 3, 1, 2 }
+        // { x, -z, y } { 1, -3, 2 }
+        // { -z, -x, y } { -3, -1, 2 }
+        views24[8]->push_back(new relative_coords{.x=dx, .y=dz, .z=-dy});
+        views24[9]->push_back(new relative_coords{.x=dz, .y=-dx, .z=-dy});
+        views24[10]->push_back(new relative_coords{.x=-dx, .y=-dz, .z=-dy});
+        views24[11]->push_back(new relative_coords{.x=-dz, .y=dx, .z=-dy});
+        views24[12]->push_back(new relative_coords{.x=-dx, .y=dz, .z=dy});
+        views24[13]->push_back(new relative_coords{.x=dz, .y=dx, .z=dy});
+        views24[14]->push_back(new relative_coords{.x=dx, .y=-dz, .z=dy});
+        views24[15]->push_back(new relative_coords{.x=-dz, .y=-dx, .z=dy});
+        // { z, y, -x } { 3, 2, -1 }
+        // { y, -z, -x } { 2, -3, -1 }
+        // { -z, -y, -x } { -3, -2, -1 }
+        // { -y, z, -x } { -2, 3, -1 }
+        // { y, z, x } { 2, 3, 1 }
+        // { z, -y, x } { 3, -2, 1 }
+        // { -y, -z, x } { -2, -3, 1 }
+        // { -z, y, x } { -3, 2, 1 }
+        views24[16]->push_back(new relative_coords{.x=dz, .y=dy, .z=-dx});
+        views24[17]->push_back(new relative_coords{.x=dy, .y=-dz, .z=-dx});
+        views24[18]->push_back(new relative_coords{.x=-dz, .y=-dy, .z=-dx});
+        views24[19]->push_back(new relative_coords{.x=-dy, .y=dz, .z=-dx});
+        views24[20]->push_back(new relative_coords{.x=dy, .y=dz, .z=dx});
+        views24[21]->push_back(new relative_coords{.x=dz, .y=-dy, .z=dx});
+        views24[22]->push_back(new relative_coords{.x=-dy, .y=-dz, .z=dx});
+        views24[23]->push_back(new relative_coords{.x=-dz, .y=dy, .z=dx});
     }
 };
 
 void show_space(set<relative_coords *, rc_less> &space) {
-    for (auto &c : space) {
+    for (auto &c: space) {
         cout << static_cast<string>(*c) << endl;
     }
 }
@@ -347,30 +358,13 @@ int main(int argc, char *argv[]) {
     }
 
     for (auto *&s: scanners) {
-        sort(s->beacons->begin(), s->beacons->end(), rc_less());
-        // prepare all information about previously parsed scanner data
-        s->b2b = new single_scanner::coord_list_views[s->beacons->size()];
-//        cout << "Created coord_list_views[" << s->beacons->size() << "] " << (void *)s->b2b << endl;
-        for (vector<relative_coords *>::size_type pos = 0; pos < s->beacons->size(); pos++) {
-            // creating 24 vectors
-            s->b2b[pos] = new single_scanner::coord_list_p[24];
-//            cout << "Created (" << pos << ") coord_list_p " << (void *)s->b2b[pos] << endl;
-            for (int i = 0; i < 24; i++) {
-                s->b2b[pos][i] = new single_scanner::coord_list;
-//                cout << "Created (" << pos << ", " << i << ") coord_list " << (void *)s->b2b[pos][i] << endl;
-            }
-        }
-        s->s2b = new single_scanner::coord_list_p[24];
-        for (int i = 0; i < 24; i++) {
-            s->s2b[i] = new single_scanner::coord_list;
-        }
         s->initialize();
     }
 
-    cout << endl;
-    for (auto *&scanner: scanners) {
-        cout << static_cast<string>(*scanner) << endl;
-    }
+//    cout << endl;
+//    for (auto *&scanner: scanners) {
+//        cout << static_cast<string>(*scanner) << endl;
+//    }
 
     // part 1
 
@@ -390,65 +384,82 @@ int main(int argc, char *argv[]) {
     scanners[0]->resolved_view = 0;
     scanners[0]->position = new relative_coords{0, 0, 0};
 
-    for (auto *&s1: scanners) {
-        // first scanner has to be resolved
-        if (!s1->resolved) {
-            continue;
-        }
-        for (auto *&s2: scanners) {
-            if (!s2->resolved) {
-                cout << "Checking " << s1->id << " with " << s2->id << endl;
-                // checking if two scanners have at least 12 beacons in common 24x24 views will be checked for each
-                // combination of beacons...
-                int b1c = 0;
-                for (auto &b1: *s1->beacons) {
-                    int b2c = 0;
-                    for (auto &b2: *s2->beacons) {
-                        int p1 = s1->resolved_view;
-                        for (int p2 = 0; p2 < 24; p2++) {
-                            tmp_space.clear();
-                            int v1count = static_cast<int>(s1->b2b[b1c][p1]->size());
-                            int v2count = static_cast<int>(s2->b2b[b2c][p2]->size());
-                            tmp_space.insert(s1->b2b[b1c][p1]->begin(), s1->b2b[b1c][p1]->end());
-                            tmp_space.insert(s2->b2b[b2c][p2]->begin(), s2->b2b[b2c][p2]->end());
-                            if (v1count + v2count - tmp_space.size() + 1 > 1) {
-                                cout << "Common " << v1count + v2count - tmp_space.size() + 1 << endl;
-                            }
-                            if (v1count + v2count - tmp_space.size() + 1 >= 12) {
-                                // there are at least 12 common beacons:
-                                //  - scanner1 - beacon1 and at least 11 beacons in beacon1's view number 0
-                                //  - scanner2 - beacon2 and at least 11 beacons in beacon2's view number p2
-                                // we can mark s2 as resolved
-                                s2->resolved = true;
-                                // if s2 was resolved by comparing view v1 of beacon1 and view v2 of beacon2
-                                s2->resolved_view = p2;
-                                // each of the beacon in beacon2 view number p2 can be added to the space after
-                                // unrelativizing the coordinates by the difference of b2 and b1 (because that's the
-                                // same beacon actually!)
+    while (true) {
+        bool change = false;
+        for (auto *&s1: scanners) {
+            // first scanner has to be resolved
+            if (!s1->resolved) {
+                continue;
+            }
+            for (auto *&s2: scanners) {
+                if (!s2->resolved) {
+                    cout << "Checking " << s1->id << " with " << s2->id << endl;
+                    // checking if two scanners have at least 12 beacons in common 24x24 views will be checked for each
+                    // combination of beacons...
+                    for (unsigned int b1c = 0; b1c < s1->beacons->size(); b1c++) {
+                        for (unsigned int b2c = 0; b2c < s2->beacons->size(); b2c++) {
+                            for (int p1 = s1->resolved_view; p1 < s1->resolved_view + 1; p1++) {
+                                for (int p2 = 0; p2 < 24; p2++) {
+                                    tmp_space.clear();
+                                    int v1count = static_cast<int>(s1->b2b[b1c][p1]->size());
+                                    int v2count = static_cast<int>(s2->b2b[b2c][p2]->size());
+                                    tmp_space.insert(s1->b2b[b1c][p1]->begin(), s1->b2b[b1c][p1]->end());
+                                    tmp_space.insert(s2->b2b[b2c][p2]->begin(), s2->b2b[b2c][p2]->end());
+                                    if (v1count + v2count - tmp_space.size() + 1 >= 12) {
+                                        cout << "Common " << v1count + v2count - tmp_space.size() + 1 << endl;
+                                    }
+                                    if (v1count + v2count - tmp_space.size() + 1 >= 12) {
+                                        // there are at least 12 common beacons:
+                                        //  - scanner1 - beacon1 and at least 11 beacons in beacon1's view number 0
+                                        //  - scanner2 - beacon2 and at least 11 beacons in beacon2's view number p2
+                                        // we can mark s2 as resolved
+                                        s2->resolved = true;
+                                        change = true;
+                                        // if s2 was resolved by comparing view v1 of beacon1 and view v2 of beacon2
+                                        s2->resolved_view = 0;
+                                        // each of the beacon in beacon2 view number p2 can be added to the space after
+                                        // unrelativizing the coordinates by the difference of b2 and b1 (because that's the
+                                        // same beacon actually!)
 
-                                int dx = (*s1->s2b[p1])[b1c]->x - (*s2->s2b[p2])[b2c]->x + s1->position->x;
-                                int dy = (*s1->s2b[p1])[b1c]->y - (*s2->s2b[p2])[b2c]->y + s1->position->y;
-                                int dz = (*s1->s2b[p1])[b1c]->z - (*s2->s2b[p2])[b2c]->z + s1->position->z;
+                                        int dx = (*s1->s2b[p1])[b1c]->x - (*s2->s2b[p2])[b2c]->x;
+                                        int dy = (*s1->s2b[p1])[b1c]->y - (*s2->s2b[p2])[b2c]->y;
+                                        int dz = (*s1->s2b[p1])[b1c]->z - (*s2->s2b[p2])[b2c]->z;
 
-                                s2->position = new relative_coords{dx, dy, dz};
+                                        s2->position = new relative_coords{dx, dy, dz};
 
-                                for (auto *&c: *s2->s2b[p2]) {
-                                    space.insert(new relative_coords{c->x + dx, c->y + dy, c->z + dz});
+                                        for (auto *&c: *s2->s2b[p2]) {
+                                            space.insert(new relative_coords{c->x + dx, c->y + dy, c->z + dz});
+                                        }
+                                        // let's alter the resolved scanner as if it was in the same position as the base scanner
+                                        for (auto *&b: *s2->beacons) {
+                                            delete b;
+                                        }
+                                        s2->beacons->clear();
+                                        for (auto *&c: *s2->s2b[p2]) {
+                                            s2->beacons->push_back(
+                                                    new relative_coords{c->x + dx, c->y + dy, c->z + dz});
+                                        }
+                                        s2->deleteMaps(s2->beacons->size());
+                                        s2->initialize();
+                                        //                                    cout << "Changed scanner " << s2->id << ":" << endl;
+                                        //                                    cout << static_cast<string>(*s2) << endl;
+                                        break;
+                                    }
                                 }
+                            }
+                            if (s2->resolved) {
                                 break;
                             }
                         }
                         if (s2->resolved) {
                             break;
                         }
-                        b2c++;
                     }
-                    if (s2->resolved) {
-                        break;
-                    }
-                    b1c++;
                 }
             }
+        }
+        if (!change) {
+            break;
         }
     }
 
@@ -460,6 +471,19 @@ int main(int argc, char *argv[]) {
     // part 2
 
     int answer2 = 0;
+
+    for (auto *&s1: scanners) {
+        for (auto *&s2: scanners) {
+            if (s1->id == s2->id) {
+                continue;
+            }
+            int dist = abs(s1->position->x - s2->position->x) + abs(s1->position->y - s2->position->y) +
+                       abs(s1->position->z - s2->position->z);
+            if (answer2 < dist) {
+                answer2 = dist;
+            }
+        }
+    }
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
