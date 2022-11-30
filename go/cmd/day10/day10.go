@@ -46,14 +46,14 @@ func init() {
 
 func run(cmd *cobra.Command, args []string) {
 	if file == "" || len(args) < 1 {
-		cmd.Usage()
+		_ = cmd.Usage()
 		os.Exit(1)
 	}
 
 	var buf []byte
 	var e error
 	if buf, e = ioutil.ReadFile(file); e != nil {
-		fmt.Fprintf(os.Stderr, "Error reading file \"%s\": %s\n", file, e)
+		_, _ = fmt.Fprintf(os.Stderr, "Error reading file \"%s\": %s\n", file, e)
 		os.Exit(1)
 	}
 
@@ -105,6 +105,8 @@ func run(cmd *cobra.Command, args []string) {
 		skip++
 	}
 
+	fmt.Printf("Answer 1: %d\n", input1[0]*input1[1])
+
 	pos = 0
 	skip = 0
 	for i := 0; i < 64; i++ {
@@ -130,6 +132,5 @@ func run(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	fmt.Printf("Answer 1: %d\n", input1[0]*input1[1])
 	fmt.Printf("Answer 2: %s\n", hex.EncodeToString(denseHash))
 }
