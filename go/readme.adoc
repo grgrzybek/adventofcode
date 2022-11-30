@@ -1,0 +1,28 @@
+= Advent of Code 2022
+
+== Go development
+
+----
+$ go mod init github.com/grgrzybek/adventofcode
+go: creating new go.mod: module github.com/grgrzybek/adventofcode
+
+$ # open project in GoLand, open go.mod and choose "Setup GOROOT"
+$ # choose "Enable Go support"
+$ # add file importing "github.com/spf13/cobra"
+
+$ go mod tidy
+go: finding module for package github.com/spf13/cobra
+go: downloading github.com/spf13/cobra v1.6.1
+go: found github.com/spf13/cobra in github.com/spf13/cobra v1.6.1
+go: downloading github.com/inconshreveable/mousetrap v1.0.1
+
+$ make
+go build -o bin/hello github.com/grgrzybek/adventofcode2022/cmd/hello
+go build -o bin/aoc2022 github.com/grgrzybek/adventofcode2022/cmd/aoc2022
+
+$ bin/aoc2022 dayNN -f assets/dayNN.txt
+----
+
+Links:
+
+* https://github.com/golang-standards/project-layout
