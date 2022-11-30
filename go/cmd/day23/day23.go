@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"github.com/grgrzybek/adventofcode2018/go/cmd"
 	"github.com/spf13/cobra"
+	"math"
 	"os"
 	"sort"
 )
@@ -76,6 +77,10 @@ func run(cmd *cobra.Command, _ []string) {
 	})
 	fmt.Printf("Bot with largest range: %s\n", bots[0])
 
+	xlimits := []int{math.MaxInt32, math.MinInt32}
+	ylimits := []int{math.MaxInt32, math.MinInt32}
+	zlimits := []int{math.MaxInt32, math.MinInt32}
+
 	b0 := bots[0]
 	count := 0
 	for _, b := range bots {
@@ -95,8 +100,28 @@ func run(cmd *cobra.Command, _ []string) {
 		if d <= b0.r {
 			count++
 		}
+
+		if xlimits[0] > b.x-b.r {
+			xlimits[0] = b.x - b.r
+		}
+		if ylimits[0] > b.y-b.r {
+			ylimits[0] = b.y - b.r
+		}
+		if zlimits[0] > b.z-b.r {
+			zlimits[0] = b.z - b.r
+		}
+		if xlimits[1] < b.x+b.r {
+			xlimits[1] = b.x + b.r
+		}
+		if ylimits[1] < b.y+b.r {
+			ylimits[1] = b.y + b.r
+		}
+		if zlimits[1] < b.z+b.r {
+			zlimits[1] = b.z + b.r
+		}
 	}
 
+	fmt.Printf("x: %d-%d, y: %d-%d, z: %d-%d\n", xlimits[0], xlimits[1], ylimits[0], ylimits[1], zlimits[0], zlimits[1])
 	fmt.Printf("Answer 1: %d, Answer 2: %d\n", count, 0)
 }
 

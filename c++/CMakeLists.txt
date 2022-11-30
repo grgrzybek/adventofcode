@@ -35,8 +35,7 @@ set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/_install")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O0 -g")
 set(CMAKE_CXX_STANDARD 14)
 
-#set(commands day01 day02 CACHE STRING "AoC 2018 commands" FORCE)
-set(commands day01 day02)
+set(commands day01)
 
 #message("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 #message("CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")

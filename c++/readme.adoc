@@ -84,7 +84,7 @@ Having non-IDE aware sources and CMake files, we can generate Eclipse project:
 
 Now it's enough to import `/home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-eclipse`.
 
-From now on, we can regenerate Makefiles, files, resources, ... simply by invoking `cmake` inside `adventofcode2018-eclipse`.
+From now on, we can regenerate Makefiles, files, resources, ... simply by invoking `cmake .` inside `adventofcode2018-eclipse`.
 
 It's good to specify additional options:
 
@@ -96,7 +96,7 @@ It's good to specify additional options:
 So here's kind of _canonical_ project generation:
 
     $ pwd
-    /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-release
+    /home/ggrzybek/sources/github.com/grgrzybek
     $ ll -d adventofcode2018*
     drwxrwxr-x. 5 ggrzybek ggrzybek 4096 12-06 13:44 adventofcode2018
 
@@ -130,6 +130,7 @@ So here's kind of _canonical_ project generation:
     -- Configuring done
     -- Generating done
     -- Build files have been written to: /home/ggrzybek/sources/github.com/grgrzybek/adventofcode2018-debug
+
     $ cd ../adventofcode2018-release/
     $ cmake -G 'Eclipse CDT4 - Unix Makefiles' -DCMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=FALSE -DCMAKE_BUILD_TYPE=Release ../adventofcode2018/c++
     -- The C compiler identification is GNU 8.2.1

@@ -17,17 +17,60 @@
  * under the License.
  */
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
+#include <getopt.h>
 #include "config.h"
 
 using namespace std;
 
+static const char *program_name;
+
+static const struct option longopts[] = {
+		{ "help", no_argument, NULL, 'h' },
+		{ "version", no_argument, NULL, 'v' },
+		{ "file", required_argument, NULL, 'f' }
+};
+
+static void print_help(void);
+
 int main(int argc, char *argv[]) {
+
+	program_name = argv[0];
+	ios::sync_with_stdio(false);
+
+	int optc, lose = 0;
+	ifstream *input = NULL;
+
+	while ((optc = getopt_long(argc, argv, "hvf:", longopts, NULL)) != -1) {
+		switch (optc) {
+		case 'f':
+			input = new ifstream(optarg, ios_base::in);
+			break;
+		case 'h':
+			print_help();
+			return EXIT_SUCCESS;
+		case 'v':
+			printf("%s\n", PACKAGE_STRING);
+			return EXIT_SUCCESS;
+		default:
+			lose = 1;
+		}
+	}
+
+	if (lose || optind < argc || !input) {
+		if (optind < argc) {
+			cerr << program_name << ": extra operand: " << argv[optind] << endl;
+		}
+		cerr << "Try `" << program_name << " --help' for more information." << endl;
+		return EXIT_FAILURE;
+	}
+
 	string s = "Hello";
 
-	cout << s << " world!" << endl;
+	cout << s << " world!!" << endl;
 	cout << AOC2018_VERSION << endl;
 
 	return 0;
