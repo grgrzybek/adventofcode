@@ -32,7 +32,7 @@ func init() {
 		Use:   "aoc2017",
 		Short: "Applications solving Advent of Code 2017 problems in Go-Lang",
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Usage()
+			_ = cmd.Usage()
 		},
 		Version: "1.0.0",
 	}
