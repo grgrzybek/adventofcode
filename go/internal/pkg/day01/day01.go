@@ -22,6 +22,7 @@ import (
 	"github.com/grgrzybek/adventofcode2022/internal/app/aoc2022"
 	"github.com/spf13/cobra"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -54,24 +55,37 @@ func run(cmd *cobra.Command, _ []string) {
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
 
-	values := make([]int64, 0)
+	values := make([]int, 0)
+	var singleElf int
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "" {
-			break
+			values = append(values, singleElf)
+			singleElf = 0
+			continue
 		}
 		v, _ := strconv.ParseInt(line, 10, 0)
-		values = append(values, v)
+		singleElf = singleElf + int(v)
 	}
+	values = append(values, singleElf)
 
 	// part 1
 
-	var answer1 int64
+	var answer1 = 0
+	for _, v := range values {
+		if answer1 < v {
+			answer1 = v
+		}
+	}
 
 	// part 2
 
-	var answer2 int64
+	var answer2 = 0
+	sort.Slice(values, func(a, b int) bool {
+		return values[a] > values[b]
+	})
+	answer2 = values[0] + values[1] + values[2]
 
 	fmt.Printf("Answer 1: %d, Answer 2: %d\n", answer1, answer2)
 }
