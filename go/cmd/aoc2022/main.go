@@ -19,6 +19,7 @@ package main
 import (
 	"github.com/grgrzybek/adventofcode2022/internal/app/aoc2022"
 	_ "github.com/grgrzybek/adventofcode2022/internal/pkg/day01"
+	_ "github.com/grgrzybek/adventofcode2022/internal/pkg/day02"
 )
 
 func main() {

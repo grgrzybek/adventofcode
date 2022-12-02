@@ -16,6 +16,7 @@
 
 FILES = \
 	internal/pkg/day01/day01.go \
+	internal/pkg/day02/day02.go \
 	cmd/aoc2022/main.go
 
 all: bin/hello bin/aoc2022
