@@ -1,4 +1,5 @@
 *.iml
 cmake-build-debug/
-bin/
 .idea/
+target/
+go/bin/
