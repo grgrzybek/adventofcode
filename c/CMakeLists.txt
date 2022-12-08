@@ -53,8 +53,7 @@ foreach(cmd ${commands})
     target_link_libraries(${cmd} aoc2022)
 endforeach(cmd)
 
+target_link_libraries(day08 ${PNG_LIBRARIES})
 #target_link_libraries(day09 ${SDL2_LIBRARIES})
-#target_link_libraries(day11 ${PNG_LIBRARIES})
-#target_link_libraries(day20 ${PNG_LIBRARIES})
 
 install(TARGETS ${commands} RUNTIME DESTINATION bin)
