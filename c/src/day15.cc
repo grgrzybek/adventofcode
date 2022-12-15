@@ -109,11 +109,11 @@ int main(int argc, char *argv[]) {
     vector<pair<long, long>> range;
     long dy = 0;
 
+//    const long SIZE = 20;
     const long SIZE = 4000000;
 
     for (long y = 0; y <= SIZE; y++) {
         range.clear();
-        range.emplace_back(-2, -1);
         for (auto &sb: sensors_and_beacons) {
             dy = abs((long) (sb.sy - y));
             if (dy > sb.range) {
@@ -121,32 +121,22 @@ int main(int argc, char *argv[]) {
             }
             range.emplace_back(sb.sx - (sb.range - dy), sb.sx + (sb.range - dy));
         }
-        range.emplace_back(SIZE + 1, SIZE + 2);
         sort(range.begin(), range.end(), [] (auto &p1, auto &p2) {
             return p1.first < p2.first;
         });
-        list<pair<long, long>> l(range.begin(), range.end());
 
-        long pos = -1;
-        bool change = false;
-        while (!l.empty()) {
-            change = false;
-            auto it = l.begin();
-            while (it != l.end()) {
-                if (it->second <= pos) {
-                    l.erase(it++);
-                    change = true;
-                    continue;
-                } else if ((it->first <= pos || it->first == 0) && it->second > pos) {
-                    pos = it->second;
-                    change = true;
-                }
-                it++;
+        long pos = 0;
+        size_t scanner = -1;
+        for (size_t s = 0; s < range.size(); s++) {
+            auto &p = range[s];
+            if (p.first <= pos && p.second > pos) {
+                pos = p.second;
+                scanner = s;
             }
-            if (!change && pos < SIZE) {
-                answer2 = (l.begin()->first - 1l) * 4000000l + y;
-                break;
-            }
+        }
+        if (pos < SIZE) {
+            answer2 = (range[scanner].second + 1l) * 4000000l + y;
+            break;
         }
         if (answer2 > 0) {
             break;
