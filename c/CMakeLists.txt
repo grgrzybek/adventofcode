@@ -40,6 +40,7 @@ set(commands
     day13
     day14
     day15
+    day16
 )
 
 configure_file(config.h.in "${CMAKE_INSTALL_PREFIX}/include/config.h")

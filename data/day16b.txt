@@ -1,0 +1,3 @@
+Valve AA has flow rate=0; tunnels lead to valves BB, CC
+Valve BB has flow rate=2; tunnels lead to valves AA
+Valve CC has flow rate=1; tunnels lead to valves AA
