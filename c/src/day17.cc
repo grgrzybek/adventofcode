@@ -60,55 +60,68 @@ struct shape {
     shape(string &rock, string &rock_space, int width, int height) : rock(rock), rock_space(rock_space), width(width), height(height) {}
 };
 
-int main(int argc, char *argv[]) {
-    aoc2022::Options options("Day 17", argc, argv);
-    if (!options.check())
-        return options.result();
+unsigned long simulate(long shapes, vector<shape> &rocks, string &winds) {
+    long size = 55000;
 
-    cout << "Starting " << options.program_name << endl;
+    char *well = new char[7 * size * 4];
+    memset(well, '.', sizeof(char) * 7 * size * 4);
 
-    ifstream *input = options.file();
-
-    string winds;
-    getline(*input, winds);
-
-    vector<shape> rocks;
-    rocks.emplace_back(rock1, rock1_space, 4, 1);
-    rocks.emplace_back(rock2, rock2_space, 3, 3);
-    rocks.emplace_back(rock3, rock3_space, 3, 3);
-    rocks.emplace_back(rock4, rock4_space, 1, 4);
-    rocks.emplace_back(rock5, rock5_space, 2, 2);
-
-    // part 1
-
-    char *well = new char[7 * 2023 * 4];
-    memset(well, '.', sizeof(char) * 7 * 2023 * 4);
-
-    int bottom = 2023 * 4;
-    int current_bottom = bottom;
+    long bottom = size * 4;
+    long current_bottom = bottom;
     size_t current_rock = 0;
     size_t current_wind = 0;
 
-    int rock_count = 0;
-    while (rock_count < 2022) {
+    string *well_fragment = nullptr;
+
+    long height_diff = 0;
+
+    bool we_have_a_pattern = false;
+    string pattern;
+    string match;
+
+    long rock_count = 0;
+    long prev_rock = 0;
+    long prev_height = 0;
+
+    while (rock_count < shapes) {
+        if (bottom >= current_bottom + 1000) {
+            if (!we_have_a_pattern) {
+                // let's remember current top 20 rows
+                pattern.assign(well + current_bottom * 7, 20 * 7);
+                we_have_a_pattern = true;
+            } else {
+                match.assign(well + current_bottom * 7, 20 * 7);
+                if (pattern == match) {
+                    if (prev_rock == 0 && prev_height == 0) {
+                        prev_rock = rock_count;
+                        prev_height = bottom - current_bottom;
+                    } else {
+                        long skip_cycles = (shapes - rock_count) / (rock_count - prev_rock);
+                        rock_count += skip_cycles * (rock_count - prev_rock);
+                        height_diff += skip_cycles * (bottom - current_bottom - prev_height);
+                    }
+                }
+            }
+        }
         shape &s = rocks[current_rock++];
 
         int indent = 2;
-        int top_row = current_bottom - s.height - 3;
+        long top_row = current_bottom - s.height - 3;
 
         while (true) {
             char dir = winds[current_wind++];
 
-            string well_fragment(s.rock_space);
-            well_fragment += ".......";
+            delete well_fragment;
+            well_fragment = new string(s.rock_space);
+            *well_fragment += ".......";
 
             // draw current well fragment
             for (int row = 0; row <= s.height; row++) {
                 for (int x = 0; x < 7; x++) {
                     if (row + top_row >= bottom) {
-                        well_fragment[row * 7 + x] = '#';
+                        (*well_fragment)[row * 7 + x] = '#';
                     } else {
-                        well_fragment[row * 7 + x] = well[(row + top_row) * 7 + x];
+                        (*well_fragment)[row * 7 + x] = well[(row + top_row) * 7 + x];
                     }
                 }
             }
@@ -124,7 +137,7 @@ int main(int argc, char *argv[]) {
             bool ok = true;
             for (int row = 0; row < s.height; row++) {
                 for (int x = new_indent; x < s.width + new_indent; x++) {
-                    char wc = well_fragment[row * 7 + x];
+                    char wc = (*well_fragment)[row * 7 + x];
                     char sc = s.rock[row * s.width + x - new_indent];
                     if (wc != '.' && sc == '#') {
                         ok = false;
@@ -143,7 +156,7 @@ int main(int argc, char *argv[]) {
             // check if a shape can be drawn after falling down
             for (int row = 1; row <= s.height; row++) {
                 for (int x = indent; x < s.width + indent; x++) {
-                    char wc = well_fragment[row * 7 + x];
+                    char wc = (*well_fragment)[row * 7 + x];
                     char sc = s.rock[(row - 1) * s.width + (x - indent)];
                     if (wc != '.' && sc == '#') {
                         ok = false;
@@ -182,12 +195,6 @@ int main(int argc, char *argv[]) {
 
             current_wind %= winds.length();
             if (!ok) {
-//                for (int row = current_bottom - 4; row < 2023 * 4; row++) {
-//                    for (int x = 0; x < 7; x++) {
-//                        cout << well[row * 7 + x];
-//                    }
-//                    cout << "\n";
-//                }
                 break;
             }
         }
@@ -196,23 +203,41 @@ int main(int argc, char *argv[]) {
         rock_count++;
     }
 
-    for (int row = current_bottom - 4; row < 2023 * 4; row++) {
-        for (int x = 0; x < 7; x++) {
-            cout << well[row * 7 + x];
-        }
-        cout << "\n";
-    }
+    unsigned long answer = bottom - current_bottom + height_diff;
 
-    int answer1 = bottom - current_bottom;
+    delete[] well;
+
+    return answer;
+}
+
+int main(int argc, char *argv[]) {
+    aoc2022::Options options("Day 17", argc, argv);
+    if (!options.check())
+        return options.result();
+
+    cout << "Starting " << options.program_name << endl;
+
+    ifstream *input = options.file();
+
+    string winds;
+    getline(*input, winds);
+
+    vector<shape> rocks;
+    rocks.emplace_back(rock1, rock1_space, 4, 1);
+    rocks.emplace_back(rock2, rock2_space, 3, 3);
+    rocks.emplace_back(rock3, rock3_space, 3, 3);
+    rocks.emplace_back(rock4, rock4_space, 1, 4);
+    rocks.emplace_back(rock5, rock5_space, 2, 2);
+
+    // part 1
+
+    unsigned long answer1 = simulate(2022, rocks, winds);
+    cout << "Answer 1: " << answer1 << endl;
 
     // part 2
 
-    int answer2 = 0;
-
-    cout << "Answer 1: " << answer1 << endl;
+    unsigned long answer2 = simulate(1000000000000, rocks, winds);
     cout << "Answer 2: " << answer2 << endl;
-
-    delete[] well;
 
     return EXIT_SUCCESS;
 }
