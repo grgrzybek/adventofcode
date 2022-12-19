@@ -40,10 +40,14 @@ struct valve {
 
 struct wanderer {
     valve *current;
+    valve *el_current;
     valve *next;
+    valve *el_next;
     set<string> *unvisited;
     vector<string> visited;
+    vector<string> el_visited;
     int travel_time_to_next = 0;
+    int el_travel_time_to_next = 0;
     int current_pressure = 0;
     int time_left = 0;
 };
@@ -129,7 +133,7 @@ int main(int argc, char *argv[]) {
 
     // part 1
 
-    int max_pressure = 0;
+    int answer1 = 0;
     deque<wanderer> q;
     auto aa = valve_index["AA"];
     set<string> unvisited;
@@ -142,14 +146,11 @@ int main(int argc, char *argv[]) {
         valve *v2 = valve_index[v1.first];
         if (v2->pressure > 0) {
             auto w_unvisited = new set<string>(unvisited.begin(), unvisited.end());
-            q.push_back(wanderer{ .current = aa, .next = v2, .unvisited = w_unvisited, .travel_time_to_next = v1.second, .time_left = 30 });
+            q.push_back(
+                    wanderer{ .current = aa, .next = v2, .unvisited = w_unvisited, .travel_time_to_next = v1.second, .time_left = 30 });
         }
     }
-    size_t max_size = 0;
     while (!q.empty()) {
-        if (max_size < q.size()) {
-            max_size = q.size();
-        }
         wanderer w = q.back();
         q.pop_back();
 
@@ -179,10 +180,11 @@ int main(int argc, char *argv[]) {
                     }
                     valve *next2 = valve_index[u2];
                     if (w.current->travel_times[u1] + 1 + next1->travel_times[u2] + 1 < w.time_left) {
-                        potential += next2->pressure * (max(0, w.time_left - w.current->travel_times[u1] - 1 - next1->travel_times[u2] - 1));
+                        potential += next2->pressure * (max(0,
+                                w.time_left - w.current->travel_times[u1] - 1 - next1->travel_times[u2] - 1));
                     }
                 }
-                if (w.current_pressure + potential > max_pressure && w.unvisited->size() > 1) {
+                if (w.current_pressure + potential > answer1) {
                     wanderer w2 = w;
                     w2.unvisited = new set<string>(w.unvisited->begin(), w.unvisited->end());
                     w2.current = w.current;
@@ -196,12 +198,222 @@ int main(int argc, char *argv[]) {
         }
 
         if (!moving) {
-            if (w.current_pressure > max_pressure) {
-                max_pressure = w.current_pressure;
-//                cout << "END: " << w.current_pressure << ", AA";
+            if (w.current_pressure > answer1) {
+                answer1 = w.current_pressure;
+            }
+        }
+
+        delete w.unvisited;
+    }
+
+    cout << "Answer 1: " << answer1 << endl;
+
+    // part 2
+
+    int answer2 = 0;
+    q.clear();
+    aa = valve_index["AA"];
+    unvisited.clear();
+    for (auto &p: valve_index) {
+        if (p.second->pressure > 0) {
+            unvisited.insert(p.first);
+        }
+    }
+    auto w_unvisited = new set<string>(unvisited.begin(), unvisited.end());
+    q.push_back(wanderer{ .current = nullptr, .el_current = nullptr, .next = aa, .el_next = aa,
+            .unvisited = w_unvisited, .travel_time_to_next = 0, .el_travel_time_to_next = 0, .time_left = 26 });
+
+    while (!q.empty()) {
+        wanderer w = q.back();
+        q.pop_back();
+
+        // find the time passed to a moment when something interesting happens
+        int passed_time = 0;
+        if (w.next != nullptr && w.el_next != nullptr) {
+            passed_time = min(w.travel_time_to_next, w.el_travel_time_to_next);
+        } else if (w.next != nullptr) {
+            passed_time = w.travel_time_to_next;
+        } else if (w.el_next != nullptr) {
+            passed_time = w.el_travel_time_to_next;
+        }
+        w.time_left -= min(w.time_left, passed_time);
+
+        w.travel_time_to_next -= passed_time;
+        w.el_travel_time_to_next -= passed_time;
+
+        if (w.travel_time_to_next <= 0) {
+            // I've arrived
+            if (w.next == nullptr) {
+                cout << "";
+            }
+            w.current = w.next;
+            w.next = nullptr;
+            if (w.current != nullptr) {
+                if (w.current->name != "AA") {
+                    w.visited.push_back(w.current->name);
+                }
+                w.unvisited->erase(w.current->name);
+            }
+        }
+        if (w.el_travel_time_to_next <= 0) {
+            // Elephant has arrived
+            if (w.el_next == nullptr) {
+                cout << "";
+            }
+            w.el_current = w.el_next;
+            w.el_next = nullptr;
+            if (w.el_current != nullptr) {
+                if (w.el_current->name != "AA") {
+                    w.el_visited.push_back(w.el_current->name);
+                }
+                w.unvisited->erase(w.el_current->name);
+            }
+        }
+
+        if (w.visited.size() == 1 && w.visited[0] == "JJ" && w.el_visited.size() == 1 && w.el_visited[0] == "DD") {
+            cout << "\n";
+        }
+
+        if (w.time_left > 0 && w.current != nullptr && w.current->name != "AA") {
+            w.time_left--;
+            if (w.next == nullptr && w.el_next == nullptr) {
+                // we've both arrived - easy
+                if (w.current != nullptr) {
+                    w.current_pressure += w.current->pressure * (w.time_left);
+                }
+                if (w.el_current != nullptr) {
+                    w.current_pressure += w.el_current->pressure * (w.time_left);
+                }
+            } else if (w.next != nullptr) {
+                // Only elephant has arrived
+                if (w.el_current != nullptr) {
+                    w.current_pressure += w.el_current->pressure * (w.time_left);
+                }
+                w.travel_time_to_next--;
+            } else if (w.el_next != nullptr) {
+                // Only I have arrived
+                if (w.current != nullptr) {
+                    w.current_pressure += w.current->pressure * (w.time_left);
+                }
+                w.el_travel_time_to_next--;
+            }
+        }
+
+        bool moving = false;
+        if (w.time_left > 0) {
+            // let's try to move further - me and the elephant
+            vector<valve *> to_visit;
+            for (auto &u1: *w.unvisited) {
+                valve *next1 = valve_index[u1];
+                if (next1 == w.next || next1 == w.el_next) {
+                    // me or the elephant is already going there
+                    continue;
+                }
+                int my_potential = w.current != nullptr ? next1->pressure * (max(0, w.time_left - 1 - w.current->travel_times[u1])) : 0;
+                int el_potential = w.el_current != nullptr ? next1->pressure * (max(0, w.time_left - 1 - w.el_current->travel_times[u1])) : 0;
+                for (auto &u2: *w.unvisited) {
+                    if (u1 == u2) {
+                        continue;
+                    }
+                    valve *next2 = valve_index[u2];
+                    if (w.current != nullptr) {
+                        if (w.current->travel_times[u2] < w.time_left) {
+                            my_potential += next2->pressure * (max(0,
+                                    w.time_left - w.current->travel_times[u2]));
+                        }
+                    }
+                    if (w.el_current != nullptr) {
+                        if (w.el_current->travel_times[u2] < w.time_left) {
+                            el_potential += next2->pressure * (max(0,
+                                    w.time_left - w.el_current->travel_times[u2]));
+                        }
+                    }
+                }
+                if (w.current_pressure + max(my_potential, el_potential) > answer2) {
+                    to_visit.push_back(next1);
+                }
+            }
+            if (w.next == nullptr && w.el_next == nullptr && w.current != nullptr && w.el_current != nullptr) {
+                // we both can go
+                if (to_visit.size() == 1) {
+                    if (w.current != nullptr) {
+                        wanderer w2a = w;
+                        w2a.unvisited = new set<string>(w.unvisited->begin(), w.unvisited->end());
+                        w2a.next = to_visit[0];
+                        w2a.el_next = nullptr;
+                        w2a.travel_time_to_next = w2a.current->travel_times[w2a.next->name];
+                        w2a.el_travel_time_to_next = 0;
+                        q.push_back(w2a);
+                        moving = true;
+                    }
+
+                    if (w.el_current != nullptr) {
+                        wanderer w2b = w;
+                        w2b.unvisited = new set<string>(w.unvisited->begin(), w.unvisited->end());
+                        w2b.next = nullptr;
+                        w2b.el_next = to_visit[0];
+                        w2b.travel_time_to_next = 0;
+                        w2b.el_travel_time_to_next = w2b.el_current->travel_times[w2b.el_next->name];
+                        q.push_back(w2b);
+                        moving = true;
+                    }
+                } else {
+                    for (size_t i = 0; i < to_visit.size(); i++) {
+                        for (size_t j = 0; j < to_visit.size(); j++) {
+                            if (to_visit[i] == to_visit[j]) {
+                                continue;
+                            }
+                            wanderer w2 = w;
+                            w2.unvisited = new set<string>(w.unvisited->begin(), w.unvisited->end());
+                            w2.next = to_visit[i];
+                            w2.el_next = to_visit[j];
+                            w2.travel_time_to_next = w2.current->travel_times[w2.next->name];
+                            w2.el_travel_time_to_next = w2.el_current->travel_times[w2.el_next->name];
+                            q.push_back(w2);
+                            moving = true;
+                        }
+                    }
+                }
+            } else {
+                // I or elephant can go further
+                for (size_t i = 0; i < to_visit.size(); i++) {
+                    wanderer w2 = w;
+                    w2.unvisited = new set<string>(w.unvisited->begin(), w.unvisited->end());
+                    if (w.el_next == nullptr && w.el_current != nullptr) {
+                        // elephant
+                        w2.el_next = to_visit[i];
+                        w2.el_travel_time_to_next = w2.el_current->travel_times[w2.el_next->name];
+                    } else if (w.next == nullptr && w.current != nullptr) {
+                        // me
+                        w2.next = to_visit[i];
+                        w2.travel_time_to_next = w2.current->travel_times[w2.next->name];
+                    }
+                    q.push_back(w2);
+                    moving = true;
+                }
+            }
+        }
+
+        if (!moving) {
+            if (w.next != nullptr || w.el_next != nullptr) {
+                wanderer w2 = w;
+                w2.unvisited = new set<string>(w.unvisited->begin(), w.unvisited->end());
+                q.push_back(w2);
+            } else if (w.current_pressure > answer2) {
+                answer2 = w.current_pressure;
+//                cout << "END: " << w.current_pressure << "\n    me:       AA";
 //                valve *current = valve_index["AA"];
-//                int left = 30;
+//                int left = 26;
 //                for (auto &v: w.visited) {
+//                    cout << " (" << current->travel_times[v] << ") " << v << "[";
+//                    left -= current->travel_times[v] + 1;
+//                    cout << valve_index[v]->pressure << "p * " << max(0, left) << "m]";
+//                    current = valve_index[v];
+//                }
+//                cout << "\n    elephant: AA";
+//                current = valve_index["AA"];
+//                left = 26;
+//                for (auto &v: w.el_visited) {
 //                    cout << " (" << current->travel_times[v] << ") " << v << "[";
 //                    left -= current->travel_times[v] + 1;
 //                    cout << valve_index[v]->pressure << "p * " << max(0, left) << "m]";
@@ -213,12 +425,6 @@ int main(int argc, char *argv[]) {
 
         delete w.unvisited;
     }
-
-    cout << "Answer 1: " << max_pressure << " (max q size: " << max_size << ")" << endl;
-
-    // part 2
-
-    int answer2 = 0;
 
     cout << "Answer 2: " << answer2 << endl;
 
