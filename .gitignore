@@ -1,5 +1,6 @@
 *.iml
 cmake-build-debug/
+cmake-build-release/
 .idea/
 target/
 go/bin/
