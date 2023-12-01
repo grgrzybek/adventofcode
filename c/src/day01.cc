@@ -16,7 +16,6 @@
 
 #include <algorithm>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -34,19 +33,81 @@ int main(int argc, char *argv[]) {
     ifstream *input = options.file();
 
     string line;
-    vector<int> numbers;
+    vector<string> lines;
 
     while (getline(*input, line)) {
         aoc2023::trim(line);
+        lines.emplace_back(line);
     }
 
     // part 1
 
     int answer1 = 0;
+    for (const auto &l: lines) {
+        int d1 = -1;
+        int d2 = -1;
+        for (char c : l) {
+            if (c - '0' >= 0 && c - '0' <= 9) {
+                if (d1 == -1) {
+                    d1 = c - '0';
+                }
+                d2 = c - '0';
+            }
+        }
+        if (d1 > 0 && d2 > 0) {
+            answer1 += (10 * d1 + d2);
+        }
+    }
 
     // part 2
+    vector<string> numbers = { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
 
     int answer2 = 0;
+    for (const auto &l: lines) {
+//        cout << "line: " << l << endl;
+        int d1 = -1;
+        int d2 = -1;
+        int idx = 0;
+        string::size_type idx1 = string::npos;
+        string::size_type idx2 = string::npos;
+        for (char c : l) {
+            if (c - '0' >= 0 && c - '0' <= 9) {
+                if (d1 == -1) {
+                    d1 = c - '0';
+                    idx1 = idx;
+                }
+                d2 = c - '0';
+                idx2 = idx;
+            }
+            idx++;
+        }
+
+//        cout << "    " << d1 << " " << d2 << endl;
+        for (string::size_type p = 0; p < l.length(); p++) {
+            idx = 1;
+            for (const auto &n: numbers) {
+                string::size_type pos = l.find(n, p);
+                if (pos != string::npos) {
+//                    cout << "        " << n << ": " << pos << " (" << idx << ", " << idx1 << ", " << idx2 << ")" << endl;
+                    if (idx1 == string::npos || pos < idx1) {
+                        d1 = idx;
+                        idx1 = pos;
+//                        cout << " - " << d1 << "," << idx1 << endl;
+                    }
+                    if (idx2 == string::npos || pos > idx2) {
+                        d2 = idx;
+                        idx2 = pos;
+//                        cout << " - " << d2 << "," << idx2 << endl;
+                    }
+                }
+                idx++;
+            }
+        }
+//        cout << "    " << d1 << " " << d2 << endl;
+        if (d1 > 0 && d2 > 0) {
+            answer2 += (10 * d1 + d2);
+        }
+    }
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
