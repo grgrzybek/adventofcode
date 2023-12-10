@@ -201,63 +201,63 @@ int main(int argc, char *argv[]) {
             switch (v) {
                 case animal:
                     map2[y * w2 + x] = animal;
-                    map2[(y + 1) * w2 + x] = animal;
-                    map2[y * w2 + x + 1] = animal;
-                    map2[(y + 1) * w2 + x + 1] = animal;
+                    map2[(y + 1) * w2 + x] = NS;
+                    map2[y * w2 + x + 1] = WE;
+                    map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case nothing:
                     map2[y * w2 + x] = nothing;
-                    map2[(y + 1) * w2 + x] = nothing;
-                    map2[y * w2 + x + 1] = nothing;
+                    map2[(y + 1) * w2 + x] = NS;
+                    map2[y * w2 + x + 1] = WE;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case NE:
                     // |.
                     // +-
-                    map2[y * w2 + x] = NS;
-                    map2[(y + 1) * w2 + x] = NE;
-                    map2[y * w2 + x + 1] = nothing;
-                    map2[(y + 1) * w2 + x + 1] = WE;
+                    map2[y * w2 + x] = NE;
+                    map2[(y + 1) * w2 + x] = NS;
+                    map2[y * w2 + x + 1] = WE;
+                    map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case NW:
                     // |.
                     // J.
-                    map2[y * w2 + x] = NS;
-                    map2[(y + 1) * w2 + x] = NW;
-                    map2[y * w2 + x + 1] = nothing;
+                    map2[y * w2 + x] = NW;
+                    map2[(y + 1) * w2 + x] = NS;
+                    map2[y * w2 + x + 1] = WE;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case SW:
                     // ..
                     // 7.
-                    map2[y * w2 + x] = nothing;
-                    map2[(y + 1) * w2 + x] = SW;
-                    map2[y * w2 + x + 1] = nothing;
+                    map2[y * w2 + x] = SW;
+                    map2[(y + 1) * w2 + x] = NS;
+                    map2[y * w2 + x + 1] = WE;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case SE:
                     // ..
                     // F-
-                    map2[y * w2 + x] = nothing;
-                    map2[(y + 1) * w2 + x] = SE;
-                    map2[y * w2 + x + 1] = nothing;
-                    map2[(y + 1) * w2 + x + 1] = WE;
+                    map2[y * w2 + x] = SE;
+                    map2[(y + 1) * w2 + x] = NS;
+                    map2[y * w2 + x + 1] = WE;
+                    map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case NS:
                     // |.
                     // |.
                     map2[y * w2 + x] = NS;
                     map2[(y + 1) * w2 + x] = NS;
-                    map2[y * w2 + x + 1] = nothing;
+                    map2[y * w2 + x + 1] = WE;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case WE:
                     // ..
                     // __
-                    map2[y * w2 + x] = nothing;
-                    map2[(y + 1) * w2 + x] = WE;
-                    map2[y * w2 + x + 1] = nothing;
-                    map2[(y + 1) * w2 + x + 1] = WE;
+                    map2[y * w2 + x] = WE;
+                    map2[(y + 1) * w2 + x] = NS;
+                    map2[y * w2 + x + 1] = WE;
+                    map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 default:
                     break;
@@ -304,7 +304,7 @@ int main(int argc, char *argv[]) {
 //        cout << "Checking " << x+1 << ":" << y+1 << ": " << q.size() << endl;
         q.pop_front();
         u_int8_t current = map3[y * w3 + x];
-        cout << to_str(current) << endl;
+//        cout << to_str(current) << endl;
         if (current == pipe) {
             continue;
         }
@@ -359,9 +359,9 @@ int main(int argc, char *argv[]) {
 
     for (y = 1; y < h3 - 1; y += 2) {
         for (x = 1; x < w3 - 1; x += 2) {
-            // copy bottom left of the 2x2 square
+            // copy top left of the 2x2 square
 //            cout << "x: " << (x - 1) / 2 << ", y: " << (y - 1) / 2 << endl;
-            map[((y - 1) / 2) * w + ((x - 1) / 2)] = map3[(y + 1) * w3 + x];
+            map[((y - 1) / 2) * w + ((x - 1) / 2)] = map3[y * w3 + x];
         }
     }
 
