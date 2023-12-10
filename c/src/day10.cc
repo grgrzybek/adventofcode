@@ -207,55 +207,55 @@ int main(int argc, char *argv[]) {
                     break;
                 case nothing:
                     map2[y * w2 + x] = nothing;
-                    map2[(y + 1) * w2 + x] = NS;
-                    map2[y * w2 + x + 1] = WE;
+                    map2[(y + 1) * w2 + x] = nothing;
+                    map2[y * w2 + x + 1] = nothing;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case NE:
-                    // |.
-                    // +-
+                    // L -> L-
+                    //      ..
                     map2[y * w2 + x] = NE;
-                    map2[(y + 1) * w2 + x] = NS;
+                    map2[(y + 1) * w2 + x] = nothing;
                     map2[y * w2 + x + 1] = WE;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case NW:
-                    // |.
-                    // J.
+                    // J -> J.
+                    //      ..
                     map2[y * w2 + x] = NW;
-                    map2[(y + 1) * w2 + x] = NS;
-                    map2[y * w2 + x + 1] = WE;
+                    map2[(y + 1) * w2 + x] = nothing;
+                    map2[y * w2 + x + 1] = nothing;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case SW:
-                    // ..
-                    // 7.
+                    // 7 -> 7.
+                    //      |.
                     map2[y * w2 + x] = SW;
                     map2[(y + 1) * w2 + x] = NS;
-                    map2[y * w2 + x + 1] = WE;
+                    map2[y * w2 + x + 1] = nothing;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case SE:
-                    // ..
-                    // F-
+                    // F -> F-
+                    //      |.
                     map2[y * w2 + x] = SE;
                     map2[(y + 1) * w2 + x] = NS;
                     map2[y * w2 + x + 1] = WE;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case NS:
-                    // |.
-                    // |.
+                    // | -> |.
+                    //      |.
                     map2[y * w2 + x] = NS;
                     map2[(y + 1) * w2 + x] = NS;
-                    map2[y * w2 + x + 1] = WE;
+                    map2[y * w2 + x + 1] = nothing;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
                 case WE:
-                    // ..
-                    // __
+                    // - -> --
+                    //      ..
                     map2[y * w2 + x] = WE;
-                    map2[(y + 1) * w2 + x] = NS;
+                    map2[(y + 1) * w2 + x] = nothing;
                     map2[y * w2 + x + 1] = WE;
                     map2[(y + 1) * w2 + x + 1] = nothing;
                     break;
