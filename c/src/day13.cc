@@ -35,7 +35,7 @@ struct pattern {
     int w, h;
 
     ~pattern() {
-        delete map;
+        free(map);
     }
 
     friend ostream& operator<<(ostream& os, pattern &p);
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 
     int l1, l2;
     for (auto &p: patterns) {
-        cout << *p;
+//        cout << *p;
         bool found = false;
         // comparing lines
         for (int split = 0; split < p->h - 1; split++) {
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
             if (same) {
                 found = true;
                 answer1 += 100 * (split + 1);
-                cout << "split horizontally: " << split + 1 << endl << endl;
+//                cout << "split horizontally: " << split + 1 << endl << endl;
                 break;
             }
         }
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
                 }
                 if (same) {
                     answer1 += (split + 1);
-                    cout << "split vertically: " << split + 1 << endl << endl;
+//                    cout << "split vertically: " << split + 1 << endl << endl;
                     break;
                 }
             }
@@ -165,6 +165,60 @@ int main(int argc, char *argv[]) {
     // part 2
 
     unsigned long answer2 = 0;
+
+    for (auto &p: patterns) {
+//        cout << *p;
+        bool found = false;
+        // comparing lines
+        for (int split = 0; split < p->h - 1; split++) {
+            int differences = 0;
+            l1 = split;
+            l2 = split + 1;
+            while (true) {
+                if (l1 < 0 || l2 >= p->h) {
+                    break;
+                }
+                for (int x = 0; x < p->w; x++) {
+                    if (p->map[l1 * p->w + x] != p->map[l2 * p->w + x]) {
+                        differences++;
+                    }
+                }
+                l1--;
+                l2++;
+            }
+            if (differences == 1) {
+                found = true;
+                answer2 += 100 * (split + 1);
+//                cout << "split horizontally: " << split + 1 << endl << endl;
+                break;
+            }
+        }
+        if (!found) {
+            // comparing columns
+            for (int split = 0; split < p->w - 1; split++) {
+                int differences = 0;
+                l1 = split;
+                l2 = split + 1;
+                while (true) {
+                    if (l1 < 0 || l2 >= p->w) {
+                        break;
+                    }
+                    for (int y = 0; y < p->h; y++) {
+                        if (p->map[y * p->w + l1] != p->map[y * p->w + l2]) {
+                            differences++;
+                        }
+                    }
+                    l1--;
+                    l2++;
+                }
+                if (differences == 1) {
+                    answer2 += (split + 1);
+//                    cout << "split vertically: " << split + 1 << endl << endl;
+                    break;
+                }
+            }
+        }
+    }
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
