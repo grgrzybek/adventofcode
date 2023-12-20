@@ -36,6 +36,7 @@ set(commands
     day09
     day10
     day11
+    day13
     day15
 )
 
