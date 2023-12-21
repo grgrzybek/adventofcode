@@ -51,6 +51,9 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(PNG REQUIRED)
 include_directories(${PNG_INCLUDE_DIRS})
 
+find_package(OpenSSL REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIRS})
+
 add_library(aoc2023 SHARED src/utils/utils.cc)
 
 foreach(cmd ${commands})
@@ -59,7 +62,6 @@ foreach(cmd ${commands})
     target_link_libraries(${cmd} aoc2023)
 endforeach(cmd)
 
-#target_link_libraries(day09 ${PNG_LIBRARIES})
-#target_link_libraries(day09 ${SDL2_LIBRARIES})
+target_link_libraries(day14 ${OPENSSL_LIBRARIES})
 
 install(TARGETS ${commands} RUNTIME DESTINATION bin)
