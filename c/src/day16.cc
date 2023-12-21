@@ -35,6 +35,7 @@ struct beam {
 
 void show_map(char *map, int w, int h);
 void show_energy(const unsigned int *map, int w, int h);
+unsigned long calculate_energy(const char *map, unsigned int *pInt, int w, int h, int _dx, int _dy, int _x, int _y);
 
 int main(int argc, char *argv[]) {
     aoc2023::Options options("Day 16", argc, argv);
@@ -64,14 +65,61 @@ int main(int argc, char *argv[]) {
     for (int y = 0; y < h; y++) {
         strncpy(map + (y * w), lines[y].c_str(), w);
     }
-    memset((void *) energy, (int) 0, w * h);
+    memset((void *) energy, (int) 0, w * h * sizeof(int));
 
     // part 1
 
-    unsigned long answer1 = 0;
+    unsigned long answer1 = calculate_energy(map, energy, w, h, 1, 0, 0, 0);
+
+    // part 2
+
+    unsigned long answer2 = 0;
+    unsigned long answer2_tmp1 = 0;
+    unsigned long answer2_tmp2 = 0;
+
+    for (int x = 0; x < w; x++) {
+        memset((void *) energy, (int) 0, w * h * sizeof(int));
+        answer2_tmp1 = calculate_energy(map, energy, w, h, 0, 1, x, 0);
+        cout << "x=" << x << ", y=" << 0 << ", dx=" << 0 << ", dy=" << 1 << ": " << answer2_tmp1 << endl;
+        memset((void *) energy, (int) 0, w * h * sizeof(int));
+        answer2_tmp2 = calculate_energy(map, energy, w, h, 0, -1, x, h - 1);
+        cout << "x=" << x << ", y=" << h-1 << ", dx=" << 0 << ", dy=" << -1 << ": " << answer2_tmp2 << endl;
+        if (answer2 < answer2_tmp1) {
+            answer2 = answer2_tmp1;
+        }
+        if (answer2 < answer2_tmp2) {
+            answer2 = answer2_tmp2;
+        }
+    }
+    for (int y = 0; y < h; y++) {
+        memset((void *) energy, (int) 0, w * h * sizeof(int));
+        answer2_tmp1 = calculate_energy(map, energy, w, h, 1, 0, 0, y);
+        cout << "x=" << 0 << ", y=" << y << ", dx=" << 1 << ", dy=" << 0 << ": " << answer2_tmp1 << endl;
+        memset((void *) energy, (int) 0, w * h * sizeof(int));
+        answer2_tmp2 = calculate_energy(map, energy, w, h, -1, 0, w - 1, y);
+        cout << "x=" << w - 1 << ", y=" << y << ", dx=" << -1 << ", dy=" << 0 << ": " << answer2_tmp2 << endl;
+        if (answer2 < answer2_tmp1) {
+            answer2 = answer2_tmp1;
+        }
+        if (answer2 < answer2_tmp2) {
+            answer2 = answer2_tmp2;
+        }
+    }
+
+    cout << "Answer 1: " << answer1 << endl;
+    cout << "Answer 2: " << answer2 << endl;
+
+    free(map);
+    free(energy);
+
+    return EXIT_SUCCESS;
+}
+
+unsigned long calculate_energy(const char *map, unsigned int *energy, int w, int h, int _dx, int _dy, int _x, int _y) {
+    unsigned long result = 0;
 
     deque<beam> beams;
-    beams.emplace_back(beam{ .dx = 1, .dy = 0, .x = 0, .y = 0 });
+    beams.emplace_back(beam{ .dx = _dx, .dy = _dy, .x = _x, .y = _y });
 
     while (!beams.empty()) {
         auto b = beams.front();
@@ -188,22 +236,12 @@ int main(int argc, char *argv[]) {
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             if (energy[y * w + x] != 0) {
-                answer1++;
+                result++;
             }
         }
     }
 
-    // part 2
-
-    unsigned long answer2 = 0;
-
-    cout << "Answer 1: " << answer1 << endl;
-    cout << "Answer 2: " << answer2 << endl;
-
-    free(map);
-    free(energy);
-
-    return EXIT_SUCCESS;
+    return result;
 }
 
 void show_map(char *map, int w, int h) {
