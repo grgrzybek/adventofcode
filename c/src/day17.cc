@@ -23,7 +23,6 @@
 #include <iomanip>
 #include <iostream>
 #include <list>
-#include <set>
 #include <string>
 #include <vector>
 #include <numeric>
@@ -58,7 +57,7 @@ int main(int argc, char *argv[]) {
     int *cost_E;
     int *cost_S;
     int *cost_W;
-    int w, h = 0;
+    int w = 0, h = 0;
 
     while (getline(*input, line)) {
         w = (int) line.length();
@@ -74,28 +73,30 @@ int main(int argc, char *argv[]) {
     for (int y = 0; y < h; y++) {
         strncpy(map + (y * w), lines[y].c_str(), w);
     }
+
+    // part 1
+
+    long answer1 = 0;
+
     for (int i = 0; i < w * h; i++) {
         cost_N[i] = (int) numeric_limits<int>::max();
         cost_E[i] = (int) numeric_limits<int>::max();
         cost_S[i] = (int) numeric_limits<int>::max();
         cost_W[i] = (int) numeric_limits<int>::max();
     }
-
-    // part 1
-
-    long answer1 = 0;
-
     // start in 0,0 at cost = 0
     *cost_N = 0;
     *cost_E = 0;
     *cost_S = 0;
     *cost_W = 0;
 
-    int min_loss = 0;
+    int min_loss1 = 0;
+    int min_loss2 = 0;
     bool right = true;
     int x = 1, y = 0;
     while (true) {
-        min_loss += map[y * w + x] - '0';
+        min_loss1 += map[y * w + x] - '0';
+        min_loss2 += map[y * w + x] - '0';
         if (right) {
             if (x < w - 1) {
                 x++;
@@ -113,18 +114,170 @@ int main(int argc, char *argv[]) {
 
     auto q = new deque<path *>;
     q->push_back(
-            new path{ .x = 0, .y = 0, .dx = 0, .dy = 0, .straight_line = 0, .current_loss = 0, .track = new list<pair<int, int>> });
+            new path{ .x = 0, .y = 0, .dx = 0, .dy = 0, .straight_line = 0, .current_loss = 0/*, .track = new list<pair<int, int>>*/ });
 
     int heat_loss;
     string pause;
     while (!q->empty()) {
+        auto p = q->back();
+        q->pop_back();
+//        p->track->emplace_back(p->x, p->y);
+
+        if (p->x == w - 1 && p->y == h - 1 && p->current_loss < min_loss1) {
+            min_loss1 = p->current_loss;
+//            cout << "New min loss (" << p->x << ":" << p->y << ", total_loss: " << p->current_loss << ", qs: " << q->size() << ")" << endl;
+        }
+        if (p->current_loss > min_loss1) {
+            continue;
+        }
+
+        if (p->dx != 1 && p->x > 0) {
+            // didn't come from left, so may go left
+            int sl = p->straight_line;
+            int tsl = 0;
+            int cost = p->current_loss;
+            bool turn = p->dx == 0;
+            int c = 0;
+            while (((turn && tsl < 3) || sl < 3) && p->x - c > 0) {
+                heat_loss = map[p->y * w + p->x - 1 - c] - '0';
+                if (cost_W[p->y * w + p->x - 1 - c] > cost + heat_loss) {
+                    if (cost + heat_loss <= min_loss1) {
+                        q->push_back(new path{ .x = p->x - 1 - c, .y = p->y, .dx = -1, .dy = 0,
+                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss/*,
+                                .track = new list<pair<int, int>>(*p->track)*/ });
+                    }
+                    cost_W[p->y * w + p->x - 1 - c] = cost + heat_loss;
+                }
+                cost += heat_loss;
+                sl++;
+                tsl++;
+                c++;
+            }
+        }
+        if (p->dx != -1 && p->x < w - 1) {
+            // may go right
+            int sl = p->straight_line;
+            int tsl = 0;
+            int cost = p->current_loss;
+            bool turn = p->dx == 0;
+            int c = 0;
+            while (((turn && tsl < 3) || sl < 3) && p->x + c < w - 1) {
+                heat_loss = map[p->y * w + p->x + 1 + c] - '0';
+                if (cost_E[p->y * w + p->x + 1 + c] > cost + heat_loss) {
+                    if (cost + heat_loss <= min_loss1) {
+                        q->push_back(new path{ .x = p->x + 1 + c, .y = p->y, .dx = 1, .dy = 0,
+                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss/*,
+                                .track = new list<pair<int, int>>(*p->track)*/ });
+                    }
+                    cost_E[p->y * w + p->x + 1 + c] = cost + heat_loss;
+                }
+                cost += heat_loss;
+                sl++;
+                tsl++;
+                c++;
+            }
+        }
+        if (p->dy != 1 && p->y > 0) {
+            // may go up
+            int sl = p->straight_line;
+            int tsl = 0;
+            int cost = p->current_loss;
+            bool turn = p->dy == 0;
+            int c = 0;
+            while (((turn && tsl < 3) || sl < 3) && p->y - c > 0) {
+                heat_loss = map[(p->y - 1 - c) * w + p->x] - '0';
+                if (cost_N[(p->y - 1 - c) * w + p->x] > cost + heat_loss) {
+                    if (cost + heat_loss <= min_loss1) {
+                        q->push_back(new path{ .x = p->x, .y = p->y - 1 - c, .dx = 0, .dy = -1,
+                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss/*,
+                                .track = new list<pair<int, int>>(*p->track)*/ });
+                    }
+                    cost_N[(p->y - 1 - c) * w + p->x] = cost + heat_loss;
+                }
+                cost += heat_loss;
+                sl++;
+                tsl++;
+                c++;
+            }
+        }
+        if (p->dy != -1 && p->y < h - 1) {
+            // may go down
+            int sl = p->straight_line;
+            int tsl = 0;
+            int cost = p->current_loss;
+            bool turn = p->dy == 0;
+            int c = 0;
+            while (((turn && tsl < 3) || sl < 3) && p->y + c < h - 1) {
+                heat_loss = map[(p->y + 1 + c) * w + p->x] - '0';
+                if (cost_S[(p->y + 1 + c) * w + p->x] > cost + heat_loss) {
+                    if (cost + heat_loss <= min_loss1) {
+                        q->push_back(new path{ .x = p->x, .y = p->y + 1 + c, .dx = 0, .dy = 1,
+                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss/*,
+                                .track = new list<pair<int, int>>(*p->track)*/ });
+                    }
+                    cost_S[(p->y + 1 + c) * w + p->x] = cost + heat_loss;
+                }
+                cost += heat_loss;
+                sl++;
+                tsl++;
+                c++;
+            }
+        }
+
+        delete p->track;
+        delete p;
+    }
+
+    answer1 = min(min(cost_N[w * h - 1], cost_S[w * h - 1]), min(cost_E[w * h - 1], cost_W[w * h - 1]));
+
+//    for (y = 0; y < h; y++) {
+//        for (x = 0; x < w; x++) {
+//            cout << setw(3) << setfill(' ')
+//                 << min(min(cost_N[y * w + x], cost_S[y * w + x]), min(cost_E[y * w + x], cost_W[y * w + x])) << " ";
+//        }
+//        cout << endl;
+//    }
+
+    // part 2
+
+    long answer2 = 0;
+
+    for (int i = 0; i < w * h; i++) {
+        cost_N[i] = (int) numeric_limits<int>::max();
+        cost_E[i] = (int) numeric_limits<int>::max();
+        cost_S[i] = (int) numeric_limits<int>::max();
+        cost_W[i] = (int) numeric_limits<int>::max();
+    }
+    // start in 0,0 at cost = 0
+    *cost_N = 0;
+    *cost_E = 0;
+    *cost_S = 0;
+    *cost_W = 0;
+    
+    delete q;
+
+    q = new deque<path *>;
+    q->push_back(
+            new path{ .x = 0, .y = 0, .dx = 0, .dy = 0, .straight_line = 0, .current_loss = 0/*, .track = new list<pair<int, int>>*/ });
+
+    while (!q->empty()) {
+//        auto p = q->back();
+//        q->pop_back();
         auto p = q->front();
         q->pop_front();
-        p->track->emplace_back(p->x, p->y);
+//        p->track->emplace_back(p->x, p->y);
+
+        if (p->x == w - 1 && p->y == h - 1 && p->current_loss < min_loss2) {
+            min_loss2 = p->current_loss;
+//            cout << "New min loss (" << p->x << ":" << p->y << ", total_loss: " << p->current_loss << ", qs: " << q->size() << ")" << endl;
+        }
+        if (p->current_loss > min_loss2) {
+            continue;
+        }
 
 //        cout << "Cost N\n";
-//        for (int y = 0; y < h; y++) {
-//            for (int x = 0; x < w; x++) {
+//        for (y = 0; y < h; y++) {
+//            for (x = 0; x < w; x++) {
 //                if (cost_N[y * w + x] == numeric_limits<int>::max()) {
 //                    cout << "... ";
 //                } else {
@@ -134,8 +287,8 @@ int main(int argc, char *argv[]) {
 //            cout << endl;
 //        }
 //        cout << "Cost E\n";
-//        for (int y = 0; y < h; y++) {
-//            for (int x = 0; x < w; x++) {
+//        for (y = 0; y < h; y++) {
+//            for (x = 0; x < w; x++) {
 //                if (cost_E[y * w + x] == numeric_limits<int>::max()) {
 //                    cout << "... ";
 //                } else {
@@ -145,8 +298,8 @@ int main(int argc, char *argv[]) {
 //            cout << endl;
 //        }
 //        cout << "Cost S\n";
-//        for (int y = 0; y < h; y++) {
-//            for (int x = 0; x < w; x++) {
+//        for (y = 0; y < h; y++) {
+//            for (x = 0; x < w; x++) {
 //                if (cost_S[y * w + x] == numeric_limits<int>::max()) {
 //                    cout << "... ";
 //                } else {
@@ -156,8 +309,8 @@ int main(int argc, char *argv[]) {
 //            cout << endl;
 //        }
 //        cout << "Cost W\n";
-//        for (int y = 0; y < h; y++) {
-//            for (int x = 0; x < w; x++) {
+//        for (y = 0; y < h; y++) {
+//            for (x = 0; x < w; x++) {
 //                if (cost_W[y * w + x] == numeric_limits<int>::max()) {
 //                    cout << "... ";
 //                } else {
@@ -166,176 +319,118 @@ int main(int argc, char *argv[]) {
 //            }
 //            cout << endl;
 //        }
-//        if (p->x == w - 1 && p->y == h - 1) {
-//            cout << "End (total_loss: " << p->current_loss << ")" << endl;
-//            for (auto &c: *p->track) {
-//                cout << " - " << c.first << ":" << c.second << " ";
-//            }
-//            cout << endl;
-//        }
-        if (p->x == w - 1 && p->y == h - 1 && p->current_loss < min_loss) {
-            min_loss = p->current_loss;
-        }
-        if (p->current_loss > min_loss) {
-            continue;
-        }
-        cout << "Checking (" << p->x << ":" << p->y << ", total_loss: " << p->current_loss << ", qs: " << q->size() << ")" << endl;
-//        for (auto &c:  *p->track) {
-//            cout << " - " << c.first << ":" << c.second << " ";
-//        }
+//
 //        cout << endl;
+//        cout << "Checking (" << p->x << ":" << p->y << ", total_loss: " << p->current_loss << ", qs: " << q->size() << ", pl:" << p->straight_line << ")" << endl;
 //        getline(cin, pause);
 
         if (p->dx != 1 && p->x > 0) {
             // didn't come from left, so may go left
-//            if (p->dx == -1) {
-                // came from right, possibly continue
-                int sl = p->straight_line;
-                int tsl = 0;
-                int cost = p->current_loss;
-                bool turn = p->dx == 0;
-                int c = 0;
-                while (((turn && tsl < 3) || sl < 3) && p->x - c > 0) {
-                    heat_loss = map[p->y * w + p->x - 1 - c] - '0';
-                    if (cost_W[p->y * w + p->x - 1 - c] > cost + heat_loss) {
+            int sl = p->straight_line;
+            int tsl = 0;
+            int cost = p->current_loss;
+            bool turn = p->dx == 0;
+            int c = 0;
+            while (((turn && tsl < 10) || sl < 10) && p->x - c > 0) {
+                heat_loss = map[p->y * w + p->x - 1 - c] - '0';
+                if (cost_W[p->y * w + p->x - 1 - c] > cost + heat_loss) {
+                    if (((turn && tsl + 1 > 3) || (!turn && sl + 1 > 3)) && cost + heat_loss <= min_loss2) {
                         q->push_back(new path{ .x = p->x - 1 - c, .y = p->y, .dx = -1, .dy = 0,
-                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss,
-                                .track = new list<pair<int, int>>(*p->track) });
+                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss/*,
+                                .track = new list<pair<int, int>>(*p->track)*/ });
+                    }
+                    if (((turn && tsl + 1 > 3) || (!turn && sl + 1 > 3))) {
                         cost_W[p->y * w + p->x - 1 - c] = cost + heat_loss;
                     }
-                    cost += heat_loss;
-                    sl++;
-                    tsl++;
-                    c++;
                 }
-//            } else {
-//                // turn, so reset straight_line
-//                heat_loss = map[p->y * w + p->x - 1] - '0';
-//                if (cost_W[p->y * w + p->x - 1] > p->current_loss + heat_loss) {
-//                    cost_W[p->y * w + p->x - 1] = p->current_loss + heat_loss;
-//                }
-//                q->push_back(new path{ .x = p->x - 1, .y = p->y, .dx = -1, .dy = 0,
-//                        .straight_line = 1, .current_loss = p->current_loss + heat_loss,
-//                        .track = new list<pair<int, int>>(*p->track) });
-//            }
+                cost += heat_loss;
+                sl++;
+                tsl++;
+                c++;
+            }
         }
         if (p->dx != -1 && p->x < w - 1) {
             // may go right
-//            if (p->dx == 1) {
-                // came from left, possibly continue
-                int sl = p->straight_line;
-                int tsl = 0;
-                int cost = p->current_loss;
-                bool turn = p->dx == 0;
-                int c = 0;
-                while (((turn && tsl < 3) || sl < 3) && p->x + c < w - 1) {
-                    heat_loss = map[p->y * w + p->x + 1 + c] - '0';
-                    if (cost_E[p->y * w + p->x + 1 + c] > cost + heat_loss) {
+            int sl = p->straight_line;
+            int tsl = 0;
+            int cost = p->current_loss;
+            bool turn = p->dx == 0;
+            int c = 0;
+            while (((turn && tsl < 10) || sl < 10) && p->x + c < w - 1) {
+                heat_loss = map[p->y * w + p->x + 1 + c] - '0';
+                if (cost_E[p->y * w + p->x + 1 + c] > cost + heat_loss) {
+                    if (((turn && tsl + 1 > 3) || (!turn && sl + 1 > 3)) && cost + heat_loss <= min_loss2) {
                         q->push_back(new path{ .x = p->x + 1 + c, .y = p->y, .dx = 1, .dy = 0,
-                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss,
-                                .track = new list<pair<int, int>>(*p->track)});
+                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss/*,
+                                .track = new list<pair<int, int>>(*p->track)*/ });
+                    }
+                    if (((turn && tsl + 1 > 3) || (!turn && sl + 1 > 3))) {
                         cost_E[p->y * w + p->x + 1 + c] = cost + heat_loss;
                     }
-                    cost += heat_loss;
-                    sl++;
-                    tsl++;
-                    c++;
                 }
-//            } else {
-//                // turn, so reset straight_line
-//                heat_loss = map[p->y * w + p->x + 1] - '0';
-//                if (cost_E[p->y * w + p->x + 1] > p->current_loss + heat_loss) {
-//                    cost_E[p->y * w + p->x + 1] = p->current_loss + heat_loss;
-//                }
-//                q->push_back(new path{ .x = p->x + 1, .y = p->y, .dx = 1, .dy = 0,
-//                        .straight_line = 1, .current_loss = p->current_loss + heat_loss,
-//                        .track = new list<pair<int, int>>(*p->track)});
-//            }
+                cost += heat_loss;
+                sl++;
+                tsl++;
+                c++;
+            }
         }
         if (p->dy != 1 && p->y > 0) {
             // may go up
-//            if (p->dy == -1) {
-                // came from down, possibly continue
-                int sl = p->straight_line;
-                int tsl = 0;
-                int cost = p->current_loss;
-                bool turn = p->dy == 0;
-                int c = 0;
-                while (((turn && tsl < 3) || sl < 3) && p->y - c > 0) {
-                    heat_loss = map[(p->y - 1 - c) * w + p->x] - '0';
-                    if (cost_N[(p->y - 1 - c) * w + p->x] > cost + heat_loss) {
+            int sl = p->straight_line;
+            int tsl = 0;
+            int cost = p->current_loss;
+            bool turn = p->dy == 0;
+            int c = 0;
+            while (((turn && tsl < 10) || sl < 10) && p->y - c > 0) {
+                heat_loss = map[(p->y - 1 - c) * w + p->x] - '0';
+                if (cost_N[(p->y - 1 - c) * w + p->x] > cost + heat_loss) {
+                    if (((turn && tsl + 1 > 3) || (!turn && sl + 1 > 3)) && cost + heat_loss <= min_loss2) {
                         q->push_back(new path{ .x = p->x, .y = p->y - 1 - c, .dx = 0, .dy = -1,
-                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss,
-                                .track = new list<pair<int, int>>(*p->track)});
+                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss/*,
+                                .track = new list<pair<int, int>>(*p->track)*/ });
+                    }
+                    if (((turn && tsl + 1 > 3) || (!turn && sl + 1 > 3))) {
                         cost_N[(p->y - 1 - c) * w + p->x] = cost + heat_loss;
                     }
-                    cost += heat_loss;
-                    sl++;
-                    tsl++;
-                    c++;
                 }
-//            } else {
-//                // turn, so reset straight_line
-//                heat_loss = map[(p->y - 1) * w + p->x] - '0';
-//                if (cost_N[(p->y - 1) * w + p->x] > p->current_loss + heat_loss) {
-//                    cost_N[(p->y - 1) * w + p->x] = p->current_loss + heat_loss;
-//                }
-//                q->push_back(new path{ .x = p->x, .y = p->y - 1, .dx = 0, .dy = -1,
-//                        .straight_line = 1, .current_loss = p->current_loss + heat_loss,
-//                        .track = new list<pair<int, int>>(*p->track)});
-//            }
+                cost += heat_loss;
+                sl++;
+                tsl++;
+                c++;
+            }
         }
         if (p->dy != -1 && p->y < h - 1) {
             // may go down
-//            if (p->dy == 1) {
-                // came from up, possibly continue
-                int sl = p->straight_line;
-                int tsl = 0;
-                int cost = p->current_loss;
-                bool turn = p->dy == 0;
-                int c = 0;
-                while (((turn && tsl < 3) || sl < 3) && p->y + c < h - 1) {
-                    heat_loss = map[(p->y + 1 + c) * w + p->x] - '0';
-                    if (cost_S[(p->y + 1 + c) * w + p->x] > cost + heat_loss) {
+            int sl = p->straight_line;
+            int tsl = 0;
+            int cost = p->current_loss;
+            bool turn = p->dy == 0;
+            int c = 0;
+            while (((turn && tsl < 10) || sl < 10) && p->y + c < h - 1) {
+                heat_loss = map[(p->y + 1 + c) * w + p->x] - '0';
+                if (cost_S[(p->y + 1 + c) * w + p->x] > cost + heat_loss) {
+                    if (((turn && tsl + 1 > 3) || (!turn && sl + 1 > 3)) && cost + heat_loss <= min_loss2) {
                         q->push_back(new path{ .x = p->x, .y = p->y + 1 + c, .dx = 0, .dy = 1,
-                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss,
-                                .track = new list<pair<int, int>>(*p->track)});
+                                .straight_line = turn ? tsl + 1 : sl + 1, .current_loss = cost + heat_loss/*,
+                                .track = new list<pair<int, int>>(*p->track)*/ });
+//                        cout << " - pushed " << p->x << ":" << (p->y + 1 + c) << endl;
+                    }
+                    if (((turn && tsl + 1 > 3) || (!turn && sl + 1 > 3))) {
                         cost_S[(p->y + 1 + c) * w + p->x] = cost + heat_loss;
                     }
-                    cost += heat_loss;
-                    sl++;
-                    tsl++;
-                    c++;
                 }
-//            } else {
-//                // turn, so reset straight_line
-//                heat_loss = map[(p->y + 1) * w + p->x] - '0';
-//                if (cost_S[(p->y + 1) * w + p->x] > p->current_loss + heat_loss) {
-//                    cost_S[(p->y + 1) * w + p->x] = p->current_loss + heat_loss;
-//                }
-//                q->push_back(new path{ .x = p->x, .y = p->y + 1, .dx = 0, .dy = 1,
-//                        .straight_line = 1, .current_loss = p->current_loss + heat_loss,
-//                        .track = new list<pair<int, int>>(*p->track)});
-//            }
+                cost += heat_loss;
+                sl++;
+                tsl++;
+                c++;
+            }
         }
 
         delete p->track;
         delete p;
     }
 
-    answer1 = min(min(cost_N[w * h - 1], cost_S[w * h - 1]), min(cost_E[w * h - 1], cost_W[w * h - 1]));
-
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            cout << setw(3) << setfill(' ')
-                 << min(min(cost_N[y * w + x], cost_S[y * w + x]), min(cost_E[y * w + x], cost_W[y * w + x])) << " ";
-        }
-        cout << endl;
-    }
-
-    // part 2
-
-    long answer2 = 0;
+    answer2 = min(min(cost_N[w * h - 1], cost_S[w * h - 1]), min(cost_E[w * h - 1], cost_W[w * h - 1]));
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
