@@ -22,36 +22,36 @@
 
 namespace aoc2023 {
 
-	class Options {
-		int argc;
-		char **argv;
-		const char *day_name;
+    class Options {
+        int argc;
+        char **argv;
+        const char *day_name;
 
-		bool _valid = true;
-		bool _finish = false;
-		int exit_code = EXIT_SUCCESS;
+        bool _valid = true;
+        bool _finish = false;
+        int exit_code = EXIT_SUCCESS;
 
-		std::ifstream *input_file = nullptr;
+        std::ifstream *input_file = nullptr;
 
-		void parse();
+        void parse();
 
-		void print_help();
+        void print_help() const;
 
-	public:
-		const char *program_name = nullptr;
+    public:
+        const char *program_name = nullptr;
 
-		Options(const char *_day, int _argc, char *_argv[]);
-		~Options();
+        Options(const char *_day, int _argc, char *_argv[]);
+        ~Options();
 
-		[[nodiscard]] bool check() const;
+        [[nodiscard]] bool check() const;
 
-		[[nodiscard]] int result() const;
+        [[nodiscard]] int result() const;
 
-		std::ifstream *file();
-	};
+        [[nodiscard]] std::ifstream *file() const;
+    };
 
-    [[maybe_unused]] bool has_text(std::string &line);
-	void trim(std::string &line);
+    bool has_text(const std::string &line);
+    void trim(std::string &line);
 
 }
 

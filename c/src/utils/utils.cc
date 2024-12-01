@@ -24,7 +24,7 @@ namespace aoc2023 {
 
     static const char *WS = " \t\n\r";
 
-    static const struct option longopts[] = {
+    static constexpr option longopts[] = {
             {"help",    no_argument,       nullptr, 'h'},
             {"version", no_argument,       nullptr, 'v'},
             {"file",    required_argument, nullptr, 'f'}
@@ -60,7 +60,7 @@ namespace aoc2023 {
                 case 'f':
                     input_file = new std::ifstream(optarg, std::ios_base::in);
                     if (!*input_file) {
-                        std::cerr << optarg << ": " << ::strerror(errno) << " (" << optarg << ")" << std::endl;
+                        std::cerr << optarg << ": " << strerror(errno) << " (" << optarg << ")" << std::endl;
                         _valid = false;
                         exit_code = EXIT_FAILURE;
                     }
@@ -78,7 +78,7 @@ namespace aoc2023 {
             }
         }
 
-        if (lose || optind < argc || !input_file) {
+        if (lose || optind < argc) {
             if (optind < argc) {
                 std::cerr << program_name << ": extra operand: " << argv[optind] << std::endl;
             }
@@ -107,7 +107,7 @@ namespace aoc2023 {
     /**
      * Instructs about program usage
      */
-    void Options::print_help() {
+    void Options::print_help() const {
         std::cout << "Version: " << AOC2023_VERSION << "\n";
         std::cout << "Usage: " << program_name << " [OPTION]...\n";
 
@@ -126,7 +126,7 @@ namespace aoc2023 {
      * Returns managed pointer to file input stream with puzzle data
      * @return
      */
-    std::ifstream *Options::file() {
+    std::ifstream *Options::file() const {
         return input_file;
     }
 
@@ -135,7 +135,7 @@ namespace aoc2023 {
      * @param line
      * @return
      */
-    [[maybe_unused]] bool has_text(std::string &line) {
+    bool has_text(const std::string &line) {
         std::string::size_type size = line.length();
         if (!size)
             return false;
