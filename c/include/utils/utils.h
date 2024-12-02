@@ -20,7 +20,7 @@
 #include <fstream>
 #include <getopt.h>
 
-namespace aoc2023 {
+namespace aoc2024 {
 
 	class Options {
 		int argc;

@@ -16,7 +16,7 @@
 
 cmake_minimum_required(VERSION 3.30)
 
-project(aoc2023 VERSION 1.0.0
+project(aoc2024 VERSION 1.0.0
                 DESCRIPTION "Advent of Code 2024 - C/C++ with CMake"
                 HOMEPAGE_URL "https://github.com/grgrzybek/adventofcode")
 
@@ -26,6 +26,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O0 -g")
 
 set(commands
     day01
+    day02
 )
 
 configure_file(config.h.in "${CMAKE_INSTALL_PREFIX}/include/config.h")
@@ -38,12 +39,12 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(PNG REQUIRED)
 include_directories(${PNG_INCLUDE_DIRS})
 
-add_library(aoc2023 SHARED src/utils/utils.cc)
+add_library(aoc2024 SHARED src/utils/utils.cc)
 
 foreach(cmd ${commands})
     add_executable(${cmd})
     target_sources(${cmd} PUBLIC src/${cmd}.cc)
-    target_link_libraries(${cmd} aoc2023)
+    target_link_libraries(${cmd} aoc2024)
 endforeach(cmd)
 
 #target_link_libraries(day09 ${PNG_LIBRARIES})

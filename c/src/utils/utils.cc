@@ -20,7 +20,7 @@
 #include "config.h"
 #include "utils/utils.h"
 
-namespace aoc2023 {
+namespace aoc2024 {
 
     static const char *WS = " \t\n\r";
 

@@ -26,7 +26,7 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    aoc2023::Options options("Day 01", argc, argv);
+    aoc2024::Options options("Day 01", argc, argv);
     if (!options.check())
         return options.result();
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
     int a, b;
     while (getline(*input, line)) {
-        aoc2023::trim(line);
+        aoc2024::trim(line);
         istringstream iss(line);
 
         iss >> a >> b;
