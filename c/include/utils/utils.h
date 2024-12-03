@@ -32,6 +32,7 @@ namespace aoc2024 {
 		int exit_code = EXIT_SUCCESS;
 
 		std::ifstream *input_file = nullptr;
+		std::string input_file_name;
 
 		void parse();
 
@@ -48,6 +49,7 @@ namespace aoc2024 {
 		[[nodiscard]] int result() const;
 
 		std::ifstream *file();
+		std::string file_name() const;
 	};
 
     [[maybe_unused]] bool has_text(std::string &line);

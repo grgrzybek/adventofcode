@@ -59,6 +59,7 @@ namespace aoc2024 {
             switch (optc) {
                 case 'f':
                     input_file = new std::ifstream(optarg, std::ios_base::in);
+                    input_file_name = std::string(optarg);
                     if (!*input_file) {
                         std::cerr << optarg << ": " << ::strerror(errno) << " (" << optarg << ")" << std::endl;
                         _valid = false;
@@ -128,6 +129,14 @@ namespace aoc2024 {
      */
     std::ifstream *Options::file() {
         return input_file;
+    }
+
+    /**
+     * Returns FILE descriptor
+     * @return
+     */
+    std::string Options::file_name() const {
+        return input_file_name;
     }
 
     /**
