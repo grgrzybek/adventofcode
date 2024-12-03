@@ -62,6 +62,25 @@ int main(int argc, char *argv[]) {
 
     int answer2 = 0;
 
+    pos = 0;
+    bool enabled = true;
+    while (pos < size - 3) {
+        if (strncmp(buffer + pos, "do()", 4) == 0) {
+//            cout << "enabled at " << pos << endl;
+            enabled = true;
+            pos += 4;
+        } else if (strncmp(buffer + pos, "don't()", 7) == 0) {
+//            cout << "disabled at " << pos << endl;
+            enabled = false;
+            pos += 7;
+        } else if (enabled && strncmp(buffer + pos, "mul(", 4) == 0) {
+            answer2 += evaluate(buffer, pos, size);
+            pos++;
+        } else {
+            pos++;
+        }
+    }
+
     delete[] buffer;
 
     cout << "Answer 1: " << answer1 << endl;
