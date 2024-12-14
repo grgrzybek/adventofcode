@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Grzegorz Grzybek
+# Copyright 2024 Grzegorz Grzybek
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ set(commands
     day08
     day09
     day10
+    day11
 )
 
 configure_file(config.h.in "${CMAKE_INSTALL_PREFIX}/include/config.h")

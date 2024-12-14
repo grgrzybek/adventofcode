@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Grzegorz Grzybek
+ * Copyright 2024 Grzegorz Grzybek
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ namespace aoc2024 {
      * Instructs about program usage
      */
     void Options::print_help() {
-        std::cout << "Version: " << AOC2023_VERSION << "\n";
+        std::cout << "Version: " << AOC2024_VERSION << "\n";
         std::cout << "Usage: " << program_name << " [OPTION]...\n";
 
         std::cout << day_name << ".\n\n";

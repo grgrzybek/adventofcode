@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Grzegorz Grzybek
+ * Copyright 2024 Grzegorz Grzybek
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef AOC2023_UTILS_H
-#define AOC2023_UTILS_H
+#ifndef AOC2024_UTILS_H
+#define AOC2024_UTILS_H
 
 #include <fstream>
 #include <getopt.h>
@@ -57,4 +57,4 @@ namespace aoc2024 {
 
 }
 
-#endif //AOC2023_UTILS_H
+#endif //AOC2024_UTILS_H
