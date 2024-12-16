@@ -19,6 +19,7 @@
 #include <deque>
 #include <iostream>
 #include <limits>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -26,19 +27,22 @@
 
 using namespace std;
 
+struct score {
+    unsigned int up = 0, left = 0, right = 0, down = 0;
+};
+
 struct reindeer {
-    int x, y, dx, dy, score, turns;
-    char *board_copy;
+    int x, y, dx, dy;
+    unsigned int score;
+
+    vector<pair<int, int>> *path;
 
     reindeer() = default;
+    ~reindeer() {
+        delete path;
+    }
 
     reindeer(const reindeer *r, int w, int h, int dx, int dy);
-
-    void draw_map(int w, int h) const;
-
-    ~reindeer() {
-        free(board_copy);
-    }
 
     friend ostream &operator<<(ostream &os, const reindeer &r);
 };
@@ -49,9 +53,8 @@ reindeer::reindeer(const reindeer *r, int w, int h, int dx, int dy) {
     this->dx = r->dx;
     this->dy = r->dy;
     this->score = r->score;
-    this->turns = r->turns;
-    this->board_copy = (char *) malloc(sizeof(char) * w * h);
-    memcpy(this->board_copy, r->board_copy, sizeof(char) * w * h);
+    this->path = new vector<pair<int, int>>;
+    this->path->assign(r->path->begin(), r->path->end());
 
     if (!(this->dx == dx && this->dy == dy)) {
         // we have to turn first
@@ -60,46 +63,19 @@ reindeer::reindeer(const reindeer *r, int w, int h, int dx, int dy) {
             // like ">" (1, 0) -> "<" (-1, 0)
             // like "^" (0, -1) -> "v" (0, 1)
             this->score += 2000;
-            this->turns += 2;
         } else {
             // normal turn
             // like ">" (1, 0) -> "v" (0, 1) or -> "^" (0, -1)
             this->score += 1000;
-            this->turns++;
         }
     }
     this->dx = dx;
     this->dy = dy;
-    this->board_copy[this->y * w + this->x] = 'x';
     // now move
     this->x += this->dx;
     this->y += this->dy;
+    this->path->emplace_back(this->x, this->y);
     this->score++;
-}
-
-void reindeer::draw_map(int w, int h) const {
-    for (int _y = 0; _y < h; _y++) {
-        for (int _x = 0; _x < w; _x++) {
-            if (_x == x && _y == y) {
-                if (dx == 0) {
-                    if (dy == -1) {
-                        cout << "^";
-                    } else {
-                        cout << "v";
-                    }
-                } else {
-                    if (dx == -1) {
-                        cout << "<";
-                    } else {
-                        cout << ">";
-                    }
-                }
-            } else {
-                cout << this->board_copy[_y * w + _x];
-            }
-        }
-        cout << endl;
-    }
 }
 
 ostream &operator<<(ostream &os, const reindeer &r) {
@@ -155,10 +131,10 @@ int main(int argc, char *argv[]) {
         y++;
     }
 
-    cout << "--- map ---\n";
+//    cout << "--- map ---\n";
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
-            cout << board[y * w + x];
+//            cout << board[y * w + x];
             if (board[y * w + x] == 'S') {
                 sx = x;
                 sy = y;
@@ -170,10 +146,10 @@ int main(int argc, char *argv[]) {
                 board[y * w + x] = '.';
             }
         }
-        cout << endl;
+//        cout << endl;
     }
-    cout << "S: " << sx << "," << sy << endl;
-    cout << "E: " << ex << "," << ey << endl;
+//    cout << "S: " << sx << "," << sy << endl;
+//    cout << "E: " << ex << "," << ey << endl;
 
     // part 1
 
@@ -185,71 +161,102 @@ int main(int argc, char *argv[]) {
     r->dx = 1;
     r->dy = 0;
     r->score = 0;
-    r->board_copy = (char *) malloc(sizeof(char) * w * h);
-    memcpy(r->board_copy, board, sizeof(char) * w * h);
+    r->path = new vector<pair<int, int>>;
+    r->path->emplace_back(sx, sy);
+
+    auto scores = (score *) malloc(sizeof(struct score) * w * h);
+    memset(scores, 0xff, sizeof(struct score) * w * h);
+    scores[sy * w + sx].right = 0;
 
     auto q = deque<reindeer *>();
     q.emplace_back(r);
 
-    int min_score = numeric_limits<int>::max();
-    int min_turns = numeric_limits<int>::max();
+    unsigned int min_score = numeric_limits<unsigned int>::max();
 
+    set<pair<int, int>> seats;
     while (!q.empty()) {
         r = q.front();
         q.pop_front();
 
+//        cout << "checking " << *r << endl;
         if (r->x == ex && r->y == ey) {
+            cout << "reached end\n";
+            char *board2 = (char *) malloc(w * h);
+            memcpy(board2, board, w * h);
+
+            for (auto &p: *r->path) {
+                board2[p.second * w + p.first] = 'O';
+            }
+            for (y = 0; y < h; y++) {
+                for (x = 0; x < w; x++) {
+                    cout << board2[y * w + x];
+                }
+                cout << endl;
+            }
+            free(board2);
             if (min_score > r->score) {
                 min_score = r->score;
-                min_turns = r->turns;
-                cout << "one winner: " << *r << endl;
-                r->draw_map(w, h);
+                // new score, so new seats for this lowest (for now) score
+                seats.clear();
+                seats.insert(r->path->begin(), r->path->end());
+                cout << "new score: " << min_score << ", seats: " << seats.size() << endl;
+            } else if (min_score == r->score) {
+                // another potential path for this score
+                cout << "score: " << min_score << ", seats now: " << seats.size() << endl;
+                seats.insert(r->path->begin(), r->path->end());
+                cout << "    seats after adding new path: " << seats.size() << endl;
             }
             delete r;
             continue;
         }
 
-//        cout << "q size: " << q.size() << endl;
-
-        auto b = r->board_copy;
-
         // prefer going in existing direction
         // up, down, left, right
         reindeer* arr[4] { nullptr, nullptr, nullptr, nullptr };
 
-        if (b[(r->y - 1) * w + r->x] == '.') {
+        if (board[(r->y - 1) * w + r->x] == '.') {
             // can go up
             auto rn = new reindeer(r, w, h, 0, -1);
-            if (rn->score >= min_score || rn->turns >= min_turns) {
+            if (rn->score > scores[rn->y * w + rn->x].up) {
+//                cout << "not going up from " << *r << " to " << *rn << endl;
                 delete rn;
             } else {
+//                cout << "   going up from " << *r << " to " << *rn << endl;
+                scores[rn->y * w + rn->x].up = rn->score;
                 arr[0] = rn;
             }
         }
-        if (b[(r->y + 1) * w + r->x] == '.') {
+        if (board[(r->y + 1) * w + r->x] == '.') {
             // can go down
             auto rn = new reindeer(r, w, h, 0, 1);
-            if (rn->score >= min_score || rn->turns >= min_turns) {
+            if (rn->score > scores[rn->y * w + rn->x].down) {
                 delete rn;
             } else {
+//                cout << "   going down from " << *r << " to " << *rn << endl;
+                scores[rn->y * w + rn->x].down = rn->score;
                 arr[1] = rn;
             }
         }
-        if (b[r->y * w + r->x - 1] == '.') {
+        if (board[r->y * w + r->x - 1] == '.') {
             // can go left
             auto rn = new reindeer(r, w, h, -1, 0);
-            if (rn->score >= min_score || rn->turns >= min_turns) {
+            if (rn->score > scores[rn->y * w + rn->x].left) {
                 delete rn;
             } else {
+//                cout << "   going left from " << *r << " to " << *rn << endl;
+                scores[rn->y * w + rn->x].left = rn->score;
                 arr[2] = rn;
             }
         }
-        if (b[r->y * w + r->x + 1] == '.') {
+        if (board[r->y * w + r->x + 1] == '.') {
             // can go right
             auto rn = new reindeer(r, w, h, 1, 0);
-            if (rn->score >= min_score || rn->turns >= min_turns) {
+            if (rn->score > scores[rn->y * w + rn->x].right) {
+//                cout << "   not going right from " << *r << " to " << *rn << " target: " << scores[rn->y * w + rn->x] << endl;
                 delete rn;
             } else {
+//                cout << "   going right from " << *r << " to " << *rn << endl;
+                scores[rn->y * w + rn->x].right = rn->score;
                 arr[3] = rn;
             }
         }
@@ -271,11 +278,22 @@ int main(int argc, char *argv[]) {
         delete r;
     }
 
-    answer1 = min_score;
+    answer1 = min(min(scores[ey * w + ex].left, scores[ey * w + ex].right), min(scores[ey * w + ex].up, scores[ey * w + ex].up));
 
     // part 2
 
-    long answer2 = 0;
+    size_t answer2 = seats.size();
+
+//    for (auto &p: seats) {
+//        board[p.second * w + p.first] = 'O';
+//    }
+//
+//    for (y = 0; y < h; y++) {
+//        for (x = 0; x < w; x++) {
+//            cout << board[y * w + x];
+//        }
+//        cout << endl;
+//    }
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
