@@ -37,6 +37,8 @@ ostream &operator<<(ostream &os, const robot &r) {
     return os;
 }
 
+bool move_block(int x, int y, int dy, char *const board, int w, int h, bool move);
+
 int main(int argc, char *argv[]) {
     aoc2024::Options options("Day 15", argc, argv);
     if (!options.check())
@@ -48,10 +50,11 @@ int main(int argc, char *argv[]) {
 
     string line;
     int w = 0, h = 0;
+    int w2 = 0;
     int rx = 0, ry = 0;
 
     vector<string> lines;
-    string moves("");
+    string moves;
 
     bool reading_map = true;
     while (getline(*input, line)) {
@@ -62,6 +65,7 @@ int main(int argc, char *argv[]) {
         }
         if (reading_map) {
             w = static_cast<int>(line.length());
+            w2 = w * 2;
             h++;
             lines.emplace_back(line);
         } else {
@@ -70,11 +74,37 @@ int main(int argc, char *argv[]) {
     }
 
     char *board = (char *) malloc(w * h);
+    char *board2 = (char *) malloc(w2 * h);
 
     int y = 0;
     int x = 0;
     for (auto &l: lines) {
-        strncpy(board + (y++ * w), l.c_str(), w);
+        strncpy(board + (y * w), l.c_str(), w);
+        int idx = 0;
+        for (char c: l) {
+            switch (c) {
+                case '#':
+                    board2[y * w2 + idx] = '#';
+                    board2[y * w2 + idx + 1] = '#';
+                    break;
+                case 'O':
+                    board2[y * w2 + idx] = '[';
+                    board2[y * w2 + idx + 1] = ']';
+                    break;
+                case '.':
+                    board2[y * w2 + idx] = '.';
+                    board2[y * w2 + idx + 1] = '.';
+                    break;
+                case '@':
+                    board2[y * w2 + idx] = '@';
+                    board2[y * w2 + idx + 1] = '.';
+                    break;
+                default:
+                    break;
+            }
+            idx+=2;
+        }
+        y++;
     }
 
 //    cout << "--- map ---\n";
@@ -176,12 +206,192 @@ int main(int argc, char *argv[]) {
 
     // part 2
 
+//        cout << "--- map 2 ---\n";
+        for (y = 0; y < h; y++) {
+            for (x = 0; x < w2; x++) {
+//                cout << board2[y * w2 + x];
+                if (board2[y * w2 + x] == '@') {
+                    rx = x;
+                    ry = y;
+                }
+            }
+//            cout << endl;
+        }
+    //    cout << "--- moves ---\n";
+    //    cout << "[" << moves << "]" << endl;
+
     long answer2 = 0;
+
+    // < and > are the same
+    // ^ and v are the problem...
+    for (char c: moves) {
+        switch (c) {
+            case '^': {
+                if (board2[(ry - 1) * w2 + rx] == '.') {
+                    // easy
+                    board2[(ry - 1) * w2 + rx] = '@';
+                    board2[ry * w2 + rx] = '.';
+                    ry--;
+                } else if (board2[(ry - 1) * w2 + rx] == '#') {
+                    // easier - nothing to do
+                } else {
+                    // up we can see '[' or ']'
+                    if (move_block(rx, ry - 1, -1, board2, w2, h, false)) {
+                        move_block(rx, ry - 1, -1, board2, w2, h, true);
+                        board2[(ry - 1) * w2 + rx] = '@';
+                        board2[ry * w2 + rx] = '.';
+                        ry--;
+                    }
+                }
+                break;
+            }
+            case 'v': {
+                if (board2[(ry + 1) * w2 + rx] == '.') {
+                    // easy
+                    board2[(ry + 1) * w2 + rx] = '@';
+                    board2[ry * w2 + rx] = '.';
+                    ry++;
+                } else if (board2[(ry + 1) * w2 + rx] == '#') {
+                    // easier - nothing to do
+                } else {
+                    // down we can see '[' or ']'
+                    if (move_block(rx, ry + 1, 1, board2, w2, h, false)) {
+                        move_block(rx, ry + 1, 1, board2, w2, h, true);
+                        board2[(ry + 1) * w2 + rx] = '@';
+                        board2[ry * w2 + rx] = '.';
+                        ry++;
+                    }
+                }
+                break;
+            }
+            case '<': {
+                for (x = rx - 1; board2[ry * w2 + x] != '#'; x--) {
+                    if (board2[ry * w2 + x] == '.') {
+                        for (int x2 = x; x2 < rx; x2++) {
+//                            cout << board2[ry * w2 + rx] << " < " << board2[ry * w2 + rx + 1] << endl;
+                            board2[ry * w2 + x2] = board2[ry * w2 + x2 + 1];
+                        }
+                        board2[ry * w2 + rx] = '.';
+                        rx--;
+                        break;
+                    }
+                }
+                break;
+            }
+            case '>': {
+                for (x = rx + 1; board2[ry * w2 + x] != '#'; x++) {
+                    if (board2[ry * w2 + x] == '.') {
+                        for (int x2 = x; x2 > rx; x2--) {
+//                            cout << board2[ry * w2 + x2] << " > " << board2[ry * w2 + rx - 1] << endl;
+                            board2[ry * w2 + x2] = board2[ry * w2 + x2 - 1];
+                        }
+                        board2[ry * w2 + rx] = '.';
+                        rx++;
+                        break;
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+        cout << "--- map (after " << c << ") ---\n";
+        for (y = 0; y < h; y++) {
+            for (x = 0; x < w2; x++) {
+                cout << board2[y * w2 + x];
+            }
+            cout << endl;
+        }
+    }
+
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w2; x++) {
+            if (board2[y * w2 + x] == '[') {
+                answer2 += (100 * y + x);
+            }
+        }
+//        cout << endl;
+    }
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
 
     free(board);
+    free(board2);
 
     return EXIT_SUCCESS;
+}
+
+bool move_block(int x, int y, int dy, char *const board, int w, int h, bool move) {
+    // x,y is left or right part of a box "[]"
+    if (board[y * w + x] == ']') {
+        x--;
+    }
+    // x,y is now left part of a box "[]"
+    if (board[(y + dy) * w + x] == '.' && board[(y + dy) * w + x + 1] == '.') {
+        // easy move
+        if (move) {
+            board[(y + dy) * w + x] = '[';
+            board[(y + dy) * w + x + 1] = ']';
+            board[y * w + x] = '.';
+            board[y * w + x + 1] = '.';
+        }
+        return true;
+    } else if (board[(y + dy) * w + x] == '#' || board[(y + dy) * w + x + 1] == '#') {
+        // can't move
+        return false;
+    } else if (board[(y + dy) * w + x] == '[' && board[(y + dy) * w + x + 1] == ']') {
+        // one block to move
+        if (move_block(x, y + dy, dy, board, w, h, false)) {
+            if (move) {
+                move_block(x, y + dy, dy, board, w, h, true);
+                board[(y + dy) * w + x] = '[';
+                board[(y + dy) * w + x + 1] = ']';
+                board[y * w + x] = '.';
+                board[y * w + x + 1] = '.';
+            }
+            return true;
+        }
+    } else {
+        // one or two blocks above/below us
+        if (board[(y + dy) * w + x] == ']' && board[(y + dy) * w + x + 1] == '.') {
+            // only left
+            if (move_block(x - 1, y + dy, dy, board, w, h, false)) {
+                if (move) {
+                    move_block(x - 1, y + dy, dy, board, w, h, true);
+                    board[(y + dy) * w + x] = '[';
+                    board[(y + dy) * w + x + 1] = ']';
+                    board[y * w + x] = '.';
+                    board[y * w + x + 1] = '.';
+                }
+                return true;
+            }
+        } else if (board[(y + dy) * w + x] == '.' && board[(y + dy) * w + x + 1] == '[') {
+            // only right
+            if (move_block(x + 1, y + dy, dy, board, w, h, false)) {
+                if (move) {
+                    move_block(x + 1, y + dy, dy, board, w, h, true);
+                    board[(y + dy) * w + x] = '[';
+                    board[(y + dy) * w + x + 1] = ']';
+                    board[y * w + x] = '.';
+                    board[y * w + x + 1] = '.';
+                }
+                return true;
+            }
+        } else {
+            // left AND right
+            if (move_block(x - 1, y + dy, dy, board, w, h, false) && move_block(x + 1, y + dy, dy, board, w, h, false)) {
+                if (move) {
+                    move_block(x - 1, y + dy, dy, board, w, h, true);
+                    move_block(x + 1, y + dy, dy, board, w, h, true);
+                    board[(y + dy) * w + x] = '[';
+                    board[(y + dy) * w + x + 1] = ']';
+                    board[y * w + x] = '.';
+                    board[y * w + x + 1] = '.';
+                }
+                return true;
+            }
+        }
+    }
+    return false;
 }
