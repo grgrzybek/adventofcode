@@ -26,14 +26,14 @@
 
 using namespace std;
 
-struct robot {
+struct reindeer {
     int x, y, vx, vy;
 
-    friend ostream &operator<<(ostream &os, const robot &r);
+    friend ostream &operator<<(ostream &os, const reindeer &r);
 };
 
-ostream &operator<<(ostream &os, const robot &r) {
-    os << "robot: [" << r.x << "," << r.y << "], v: [" << r.vx << "," << r.vy << "]";
+ostream &operator<<(ostream &os, const reindeer &r) {
+    os << "reindeer: [" << r.x << "," << r.y << "], v: [" << r.vx << "," << r.vy << "]";
     return os;
 }
 
@@ -51,15 +51,15 @@ int main(int argc, char *argv[]) {
     string tok2;
     istringstream iss;
 
-    vector<robot *> robots;
+    vector<reindeer *> robots;
 
-    robot *r;
+    reindeer *r;
     while (getline(*input, line)) {
         aoc2024::trim(line);
         if (line.empty()) {
             continue;
         }
-        r = new robot;
+        r = new reindeer;
         robots.push_back(r);
         sscanf(line.c_str(), "p=%d,%d v=%d,%d", &r->x, &r->y, &r->vx, &r->vy);
     }

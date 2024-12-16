@@ -26,14 +26,14 @@
 
 using namespace std;
 
-struct robot {
+struct reindeer {
     int x, y, vx, vy;
 
-    friend ostream &operator<<(ostream &os, const robot &r);
+    friend ostream &operator<<(ostream &os, const reindeer &r);
 };
 
-ostream &operator<<(ostream &os, const robot &r) {
-    os << "robot: [" << r.x << "," << r.y << "], v: [" << r.vx << "," << r.vy << "]";
+ostream &operator<<(ostream &os, const reindeer &r) {
+    os << "reindeer: [" << r.x << "," << r.y << "], v: [" << r.vx << "," << r.vy << "]";
     return os;
 }
 
