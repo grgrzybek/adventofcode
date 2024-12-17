@@ -16,9 +16,7 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <deque>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -37,7 +35,7 @@ ostream &operator<<(ostream &os, const reindeer &r) {
     return os;
 }
 
-bool move_block(int x, int y, int dy, char *const board, int w, int h, bool move);
+bool move_block(int x, int y, int dy, char *board, int w, int h, bool move);
 
 int main(int argc, char *argv[]) {
     aoc2024::Options options("Day 15", argc, argv);
