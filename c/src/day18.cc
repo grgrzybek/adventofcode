@@ -19,6 +19,7 @@
 #include <cstring>
 #include <deque>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -68,17 +69,17 @@ int main(int argc, char *argv[]) {
         nanos++;
     }
 
-    int corrupted = 0;
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            if (board[y * w + x] == '#') {
-                corrupted++;
-            }
-            printf("%c", board[y * w + x]);
-        }
-        printf("\n");
-    }
-    printf("corrupted: %d, nanos: %d\n", corrupted, nanos);
+//    int corrupted = 0;
+//    for (int y = 0; y < h; y++) {
+//        for (int x = 0; x < w; x++) {
+//            if (board[y * w + x] == '#') {
+//                corrupted++;
+//            }
+//            printf("%c", board[y * w + x]);
+//        }
+//        printf("\n");
+//    }
+//    printf("corrupted: %d, nanos: %d\n", corrupted, nanos);
 
     // part 1
 
@@ -97,7 +98,7 @@ int main(int argc, char *argv[]) {
 
         int x = xy.first;
         int y = xy.second;
-        printf("  cost at %d:%d: %d\n", x, y, costs[y * w + x]);
+//        printf("  cost at %d:%d: %d\n", x, y, costs[y * w + x]);
 
         if (y > 0) {
             if (board[(y - 1) * w + x] != '#' && costs[(y - 1) * w + x] > costs[y * w + x] + 1) {
@@ -133,20 +134,98 @@ int main(int argc, char *argv[]) {
 
     answer1 = costs[h * w - 1];
 
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            if (board[y * w + x] == '#') {
-                printf(" ###");
-            } else {
-                printf(" %03d", costs[y * w + x]);
-            }
-        }
-        printf("\n");
-    }
+//    for (int y = 0; y < h; y++) {
+//        for (int x = 0; x < w; x++) {
+//            if (board[y * w + x] == '#') {
+//                printf(" ###");
+//            } else {
+//                printf(" %03d", costs[y * w + x]);
+//            }
+//        }
+//        printf("\n");
+//    }
 
     // part 2
 
-    long answer2 = 0;
+    string answer2;
+
+//    printf("\n=================================\n");
+//    for (int y = 0; y < h; y++) {
+//        for (int x = 0; x < w; x++) {
+//            printf("%c", board[y * w + x]);
+//        }
+//        printf("\n");
+//    }
+
+    for (int nano = nanos; nano < (int) coords.size(); nano++) {
+        // drop another corrupted block
+        auto &l = coords[nano];
+        board[l.second * w + l.first] = '#';
+        printf("checking nano=%d, after dropping %d,%d\n", nano, l.first, l.second);
+
+//        printf("\n=================================\n");
+//        for (int y = 0; y < h; y++) {
+//            for (int x = 0; x < w; x++) {
+//                printf("%c", board[y * w + x]);
+//            }
+//            printf("\n");
+//        }
+
+        // is there an escape in new situation?
+
+        fill(costs, costs + (w * h), numeric_limits<unsigned int>::max());
+
+        q.clear();
+        costs[0] = 0;
+        q.emplace_front(0, 0);
+
+        while (!q.empty()) {
+            auto &xy = q.front();
+            q.pop_front();
+
+            int x = xy.first;
+            int y = xy.second;
+//            printf("  cost at %d:%d: %d\n", x, y, costs[y * w + x]);
+
+            if (y > 0) {
+                if (board[(y - 1) * w + x] != '#' && costs[(y - 1) * w + x] > costs[y * w + x] + 1) {
+                    // can go up
+                    costs[(y - 1) * w + x] = costs[y * w + x] + 1;
+                    q.emplace_front(x, y - 1);
+                }
+            }
+            if (y < h - 1) {
+                if (board[(y + 1) * w + x] != '#' && costs[(y + 1) * w + x] > costs[y * w + x] + 1) {
+                    // can go down
+                    costs[(y + 1) * w + x] = costs[y * w + x] + 1;
+                    q.emplace_front(x, y + 1);
+                }
+            }
+            // left
+            if (x > 0) {
+                if (board[y * w + x - 1] != '#' && costs[y * w + x - 1] > costs[y * w + x] + 1) {
+                    // can go left
+                    costs[y * w + x - 1] = costs[y * w + x] + 1;
+                    q.emplace_front(x - 1, y);
+                }
+            }
+            // right
+            if (x < w - 1) {
+                if (board[y * w + x + 1] != '#' && costs[y * w + x + 1] > costs[y * w + x] + 1) {
+                    // can go right
+                    costs[y * w + x + 1] = costs[y * w + x] + 1;
+                    q.emplace_front(x + 1, y);
+                }
+            }
+        }
+
+        if ((int) costs[h * w - 1] == -1) {
+            ostringstream oss;
+            oss << l.first << "," << l.second;
+            answer2 = oss.str();
+            break;
+        }
+    }
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
