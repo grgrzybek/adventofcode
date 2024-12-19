@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <deque>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@
 using namespace std;
 
 int build_pattern(string &pattern, string &current, vector<string> &towels);
+void build_patterns2(string &pattern, vector<string> &towels, map<string, long> &cache);
 
 int main(int argc, char *argv[]) {
     aoc2024::Options options("Day 19", argc, argv);
@@ -91,58 +93,8 @@ int main(int argc, char *argv[]) {
     }
 
     for (auto &p: patterns) {
-        cout << "Checking pattern \"" << p << "\"\n";
+//        cout << "Checking pattern \"" << p << "\"\n";
 
-        // attempt 1 - all possible values
-        /*
-        auto sets = new vector<string>;
-
-        for (auto &t: towels) {
-            if (p.starts_with(t)) {
-                sets->push_back(t);
-            }
-        }
-
-        // which of the sets of candidates will lead to producing a pattern?
-        bool found = false;
-        while (true) {
-            if (sets->empty()) {
-                break;
-            }
-            auto sets_new = new vector<string>;
-            for (auto &cand: *sets) {
-                if (cand == p) {
-                    // we have a match!
-                    cout << " - found \"" << cand << "\"" << endl;
-                    found = true;
-                    break;
-                }
-            }
-            if (found) {
-                break;
-            }
-
-            for (auto &cand: *sets) {
-                for (auto &t: towels) {
-                    if (p.starts_with(cand + t)) {
-                        cout << " - \"" << cand << " can continue with \"" << t << "\"\n";
-                        sets_new->push_back(cand + t);
-                    }
-                }
-            }
-
-            sets->assign(sets_new->begin(), sets_new->end());
-            delete sets_new;
-        }
-
-        if (found) {
-            answer1++;
-        }
-
-        delete sets;
-        */
-
-        // attempt 2 - recursive
         string current = "";
         answer1 += build_pattern(p, current, towels);
     }
@@ -150,6 +102,14 @@ int main(int argc, char *argv[]) {
     // part 2
 
     long answer2 = 0;
+
+    for (auto &p: patterns) {
+        cout << "Checking pattern \"" << p << "\"\n";
+
+        map<string, long> cache;
+        build_patterns2(p, towels, cache);
+        answer2 += cache[p];
+    }
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
@@ -172,4 +132,30 @@ int build_pattern(string &pattern, string &current, vector<string> &towels) {
         }
     }
     return 0;
+}
+
+void build_patterns2(string &pattern, vector<string> &towels, map<string, long> &cache) {
+    if (pattern == "") {
+        return;
+    }
+    if (cache.contains(pattern)) {
+        return;
+    }
+    cout << "   Caching pattern \"" << pattern << "\"\n";
+    for (auto &c: towels) {
+        if (pattern == c) {
+            // the remaining pattern is simply this towel
+            cache[pattern] = 1;
+        } else if (pattern.starts_with(c)) {
+            string shorter = pattern.substr(c.length());
+            cout << "      Splitting to \"" << c << "\" and \"" << shorter << "\"\n";
+            build_patterns2(shorter, towels, cache);
+        }
+    }
+    for (auto &c: towels) {
+        if (pattern.starts_with(c)) {
+            string shorter = pattern.substr(c.length());
+            cache[pattern] += cache[shorter];
+        }
+    }
 }
