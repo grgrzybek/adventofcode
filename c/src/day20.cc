@@ -19,6 +19,8 @@
 #include <deque>
 #include <iostream>
 #include <limits>
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -27,10 +29,36 @@
 using namespace std;
 
 struct cheat {
-    int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x = 0, y = 0;
+    int x = 0, y = 0;
 };
 
-long track(const char *const &board, int w, int h, int sx, int sy, int ex, int ey);
+struct cheat_gate {
+    // x:y is a '.' field and dx:dy is a direction of wall for starting a cheat
+    int x = 0, y = 0, dx = 0, dy = 0;
+};
+
+struct probe {
+    int x, y;
+    int score = 0;
+    set<pair<int, int>> *path;
+
+    probe(int x, int y, int score) {
+//        cout << "Creating probe at " << x << "," << y << endl;
+        this->x = x;
+        this->y = y;
+        this->score = score;
+        path = new set<pair<int, int>>;
+    }
+
+    ~probe() {
+//        cout << "Deleting probe at " << x << "," << y << endl;
+        path->clear();
+        delete path;
+    }
+};
+
+long track(const char *const &board, int w, int h, int sx, int sy, int ex, int ey, int *honest_scores, int savings, bool trial = false);
+//long track2(const char *const &board, int w, int h, int sx, int sy, int ex, int ey, int cx, int cy, int *honest_scores, int savings);
 
 int main(int argc, char *argv[]) {
     aoc2024::Options options("Day 20", argc, argv);
@@ -41,10 +69,14 @@ int main(int argc, char *argv[]) {
 
     ifstream *input = options.file();
 
+    bool real = options.file_name()[options.file_name().length() - 5] == '0';
+
     string line;
     int w = 0, h = 0;
     int sx = 0, sy = 0;
     int ex = 0, ey = 0;
+
+    const int SAVINGS = real ? 100 : 72;
 
     vector<string> lines;
 
@@ -67,10 +99,10 @@ int main(int argc, char *argv[]) {
         y++;
     }
 
-//    cout << "--- map ---\n";
+    cout << "--- map ---\n";
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
-//            cout << board[y * w + x];
+            cout << board[y * w + x];
             if (board[y * w + x] == 'S') {
                 sx = x;
                 sy = y;
@@ -84,14 +116,18 @@ int main(int argc, char *argv[]) {
                 board[y * w + x] = '.';
             }
         }
-//        cout << endl;
+        cout << endl;
     }
 //    cout << "S: " << sx << "," << sy << endl;
 //    cout << "E: " << ex << "," << ey << endl;
 
     // part 1
 
-    long honest_cost = track(board, w, h, sx, sy, ex, ey);
+    auto honest_scores = (int *) malloc(sizeof(int) * w * h);
+    fill(honest_scores, honest_scores + (w * h), numeric_limits<int>::max());
+    honest_scores[sy * w + sx] = 0;
+
+    long honest_cost = track(board, w, h, sx, sy, ex, ey, honest_scores, SAVINGS, true);
 
     long answer1 = 0;
 
@@ -102,67 +138,275 @@ int main(int argc, char *argv[]) {
             if (board[y * w + x] == '#') {
                 // potential cheat
                 if (board[(y - 1) * w + x] == '.' && board[(y + 1) * w + x] == '.') {
-                    cheats.emplace_back(cheat{
-                        .x1 = x,
-                        .y1 = y - 1,
-                        .x2 = x,
-                        .y2 = y + 1,
-                        .x = x,
-                        .y = y
-                    });
+                    cheats.emplace_back(cheat{.x = x, .y = y});
                 }
                 if (board[y * w + x - 1] == '.' && board[y * w + x + 1] == '.') {
-                    cheats.emplace_back(cheat{
-                        .x1 = x - 1,
-                        .y1 = y,
-                        .x2 = x + 1,
-                        .y2 = y,
-                        .x = x,
-                        .y = y
-                    });
+                    cheats.emplace_back(cheat{.x = x, .y = y});
                 }
             }
         }
     }
+    cout << "potential cheats 1: " << cheats.size() << endl;
 
-    for (auto &c: cheats) {
-        // open the gate
-        board[c.y * w + c.x] = '.';
-        int cheated = track(board, w, h, sx, sy, ex, ey);
-        if (honest_cost - cheated >= 100) {
-            answer1++;
-        }
-        // close the gate
-        board[c.y * w + c.x] = '#';
-    }
+//    for (auto &c: cheats) {
+//        // open the gate
+//        board[c.y * w + c.x] = '.';
+//        long cheated = track(board, w, h, sx, sy, ex, ey, honest_scores, SAVINGS);
+//        if (honest_cost - cheated >= SAVINGS) {
+//            answer1++;
+//        }
+//        // close the gate
+//        board[c.y * w + c.x] = '#';
+//    }
 
     // part 2
 
     size_t answer2 = 0;
 
-//    for (auto &p: seats) {
-//        board[p.second * w + p.first] = 'O';
+    cout << "--- honest score ---\n";
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            if (board[y * w + x] == '#') {
+                printf(" ###");
+            } else {
+                printf(" %3d", honest_scores[y * w + x]);
+            }
+        }
+        printf("\n");
+    }
+
+    // now every '#' that has '.' on any side can be a potential cheat gate.
+    // include borders too!
+    vector<cheat_gate> cheats2;
+//    for (y = 1; y < h - 1; y++) {
+//        for (x = 1; x < w - 1; x++) {
+//            if (board[y * w + x] == '#') {
+//                // potential cheat
+//                if (y > 0 && board[(y - 1) * w + x] == '.') {
+//                    if (!(x == ex && y - 1 == ey)) {
+//                        cheats2.emplace_back(cheat_gate({.x = x, .y = y - 1, .dx = 0, .dy = 1}));
+//                    }
+//                }
+//                if (y < h - 1 && board[(y + 1) * w + x] == '.') {
+//                    if (!(x == ex && y + 1 == ey)) {
+//                        cheats2.emplace_back(cheat_gate({.x = x, .y = y + 1, .dx = 0, .dy = -1}));
+//                    }
+//                }
+//                if (x > 0 && board[y * w + x - 1] == '.') {
+//                    if (!(x - 1 == ex && y == ey)) {
+//                        cheats2.emplace_back(cheat_gate({.x = x - 1, .y = y, .dx = 1, .dy = 0}));
+//                    }
+//                }
+//                if ((x < w - 1 && board[y * w + x + 1] == '.')) {
+//                    if (!(x + 1 == ex && y == ey)) {
+//                        cheats2.emplace_back(cheat_gate({.x = x + 1, .y = y, .dx = -1, .dy = 0}));
+//                    }
+//                }
+//            }
+//        }
 //    }
-//
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            if (board[y * w + x] == '#') {
+                // potential cheat
+                if (y > 0 && board[(y - 1) * w + x] == '.') {
+                    cheats2.emplace_back(cheat_gate({.x = x, .y = y - 1, .dx = 0, .dy = 1}));
+                }
+                if (y < h - 1 && board[(y + 1) * w + x] == '.') {
+                    cheats2.emplace_back(cheat_gate({.x = x, .y = y + 1, .dx = 0, .dy = -1}));
+                }
+                if (x > 0 && board[y * w + x - 1] == '.') {
+                    cheats2.emplace_back(cheat_gate({.x = x - 1, .y = y, .dx = 1, .dy = 0}));
+                }
+                if ((x < w - 1 && board[y * w + x + 1] == '.')) {
+                    cheats2.emplace_back(cheat_gate({.x = x + 1, .y = y, .dx = -1, .dy = 0}));
+                }
+            }
+        }
+    }
+//    cheats2.clear();
+//    cheats2.emplace_back(cheat_gate({.x = 4, .y = 3, .dx = 0, .dy = 1}));
+    bool debug = true;
+//    bool debug = false;
+    cout << "potential cheats 2: " << cheats2.size() << endl;
+
+//    auto honest_scores_cheated = (int *) malloc(sizeof(int) * w * h);
+//    copy(honest_scores, honest_scores + (w * h), honest_scores_cheated);
+//    for (auto &c: cheats2) {
+//        honest_scores_cheated[c.y * w + c.x] = 123123123;
+//    }
+//    cout << "--- honest score with cheats ---\n";
 //    for (y = 0; y < h; y++) {
 //        for (x = 0; x < w; x++) {
-//            cout << board[y * w + x];
+//            if (board[y * w + x] == '#') {
+//                printf(" ###");
+//            } else {
+//                if (honest_scores_cheated[y * w + x] == 123123123) {
+//                    printf(" !! ");
+//                } else {
+//                    printf(" %3d", honest_scores[y * w + x]);
+//                }
+//            }
 //        }
-//        cout << endl;
+//        printf("\n");
 //    }
+//    free(honest_scores_cheated);
+
+    // for each cheat2 we check all <= 20 exits from the wall and check the savings
+    int cc = 1;
+    map<pair<int, int>, set<pair<int, int>>*> exits;
+    for (auto &c: cheats2) {
+        cout << "  checking cheat2 starting at " << c.x << "," << c.y << " (" << cc << " of " << cheats2.size() << ")";
+        if (c.dx == 0) {
+            if (c.dy == -1) {
+                cout << " ^\n";
+            } else {
+                cout << " v\n";
+            }
+        } else {
+            if (c.dx == -1) {
+                cout << " <\n";
+            } else {
+                cout << " >\n";
+            }
+        }
+        cc++;
+
+        deque<probe *> cq;
+        // starting with score = 1, because we moved one step into the cheat2
+        auto pr = new probe(c.x + c.dx, c.y + c.dy, 1);
+        pr->path->emplace(c.x + c.dx, c.y + c.dy);
+        cq.emplace_front(pr);
+
+        // record cheat exits that end at '.' grid with new score better than honest score by SAVINGS
+        if (!exits.contains(make_pair(c.x, c.y))) {
+            exits[make_pair(c.x, c.y)] = new set<pair<int, int>>();
+        }
+        set<pair<int, int>> *e = exits[make_pair(c.x, c.y)];
+        map<pair<int, int>, int> cheat_map;
+        cheat_map[make_pair(c.x + c.dx, c.y + c.dy)] = 0;
+
+        while (!cq.empty()) {
+            auto p = cq.front();
+            cq.pop_front();
+
+            if (debug) {
+                cout << "    checking probe at " << p->x << "," << p->y << " (score: " << p->score << ")" << endl;
+            }
+
+            // from each '#' we can
+            // 1) exit into '.' - if the target is reached with proper savings, we count it
+            if (p->y > 0 && board[(p->y - 1) * w + p->x] == '.' && honest_scores[(p->y - 1) * w + p->x] >= honest_scores[c.y * w + c.x] + p->score + 1 + SAVINGS) {
+                // exit up
+                if (debug) {
+                    cout << "    can exit up into " << p->x << "," << p->y - 1 << ". score was " << honest_scores[(p->y - 1) * w + p->x] << ", now: " << honest_scores[c.y * w + c.x] + p->score + 1 << endl;
+                    cout << "        saved: " << honest_scores[(p->y - 1) * w + p->x] - (honest_scores[c.y * w + c.x] + p->score + 1) << endl;
+                }
+                e->emplace(p->x, p->y - 1);
+            }
+            if (p->y < h - 1 && board[(p->y + 1) * w + p->x] == '.' && honest_scores[(p->y + 1) * w + p->x] >= honest_scores[c.y * w + c.x] + p->score + 1 + SAVINGS) {
+                // exit down
+                if (debug) {
+                    cout << "    can exit down into " << p->x << "," << p->y + 1 << ". score was " << honest_scores[(p->y + 1) * w + p->x] << ", now: " << honest_scores[c.y * w + c.x] + p->score + 1 << endl;
+                    cout << "        saved: " << honest_scores[(p->y + 1) * w + p->x] - (honest_scores[c.y * w + c.x] + p->score + 1) << endl;
+                }
+                e->emplace(p->x, p->y + 1);
+            }
+            if (p->x > 0 && board[p->y * w + p->x - 1] == '.' && honest_scores[p->y * w + p->x - 1] >= honest_scores[c.y * w + c.x] + p->score + 1 + SAVINGS) {
+                // exit left
+                if (debug) {
+                    cout << "    can exit left into " << p->x - 1 << "," << p->y << ". score was " << honest_scores[p->y * w + p->x - 1] << ", now: " << honest_scores[c.y * w + c.x] + p->score + 1 << endl;
+                    cout << "        saved: " << honest_scores[p->y * w + p->x - 1] - (honest_scores[c.y * w + c.x] + p->score + 1) << endl;
+                }
+                e->emplace(p->x - 1, p->y);
+            }
+            if (p->x < w - 1 && board[p->y * w + p->x + 1] == '.' && honest_scores[p->y * w + p->x + 1] >= honest_scores[c.y * w + c.x] + p->score + 1 + SAVINGS) {
+                // exit right
+                if (debug) {
+                    cout << "    can exit right into " << p->x + 1 << "," << p->y << ". score was " << honest_scores[p->y * w + p->x + 1] << ", now: " << honest_scores[c.y * w + c.x] + p->score + 1 << endl;
+                    cout << "        saved: " << honest_scores[p->y * w + p->x + 1] - (honest_scores[c.y * w + c.x] + p->score + 1) << endl;
+                }
+                e->emplace(p->x + 1, p->y);
+            }
+
+            // 2) continue cheating into the wall of '#'s
+            if (p->score < 20 - 1) {
+                if (p->y > 0 && board[(p->y - 1) * w + p->x] == '#') {
+                    // cheat up
+                    if (!cheat_map.contains(make_pair(p->x, p->y - 1)) || cheat_map[make_pair(p->x, p->y - 1)] > p->score + 1) {
+                        cheat_map[make_pair(p->x, p->y - 1)] = p->score + 1;
+                        auto npr = new probe(p->x, p->y - 1, p->score + 1);
+                        cq.emplace_front(npr);
+                    }
+                }
+                if (p->y < h - 1 && board[(p->y + 1) * w + p->x] == '#') {
+                    // cheat down
+//                    if (!p->path->contains(make_pair(p->x, p->y + 1))) {
+//                        auto npr = new probe(p->x, p->y + 1, p->score + 1);
+//                        npr->path->insert(p->path->begin(), p->path->end());
+//                        npr->path->emplace(p->x, p->y + 1);
+//                        cq.emplace_back(npr);
+//                    }
+                    if (!cheat_map.contains(make_pair(p->x, p->y + 1)) || cheat_map[make_pair(p->x, p->y + 1)] > p->score + 1) {
+                        cheat_map[make_pair(p->x, p->y + 1)] = p->score + 1;
+                        auto npr = new probe(p->x, p->y + 1, p->score + 1);
+                        cq.emplace_front(npr);
+                    }
+                }
+                if (p->x > 0 && board[p->y * w + p->x - 1] == '#') {
+                    // cheat left
+//                    if (!p->path->contains(make_pair(p->x - 1, p->y))) {
+//                        auto npr = new probe(p->x - 1, p->y, p->score + 1);
+//                        npr->path->insert(p->path->begin(), p->path->end());
+//                        npr->path->emplace(p->x - 1, p->y);
+//                        cq.emplace_back(npr);
+//                    }
+                    if (!cheat_map.contains(make_pair(p->x - 1, p->y)) || cheat_map[make_pair(p->x - 1, p->y)] > p->score + 1) {
+                        cheat_map[make_pair(p->x - 1, p->y)] = p->score + 1;
+                        auto npr = new probe(p->x - 1, p->y, p->score + 1);
+                        cq.emplace_front(npr);
+                    }
+                }
+                if (p->x < w - 1 && board[p->y * w + p->x + 1] == '#') {
+                    // cheat right
+//                    if (!p->path->contains(make_pair(p->x + 1, p->y))) {
+//                        auto npr = new probe(p->x + 1, p->y, p->score + 1);
+//                        npr->path->insert(p->path->begin(), p->path->end());
+//                        npr->path->emplace(p->x + 1, p->y);
+//                        cq.emplace_back(npr);
+//                    }
+                    if (!cheat_map.contains(make_pair(p->x + 1, p->y)) || cheat_map[make_pair(p->x + 1, p->y)] > p->score + 1) {
+                        cheat_map[make_pair(p->x + 1, p->y)] = p->score + 1;
+                        auto npr = new probe(p->x + 1, p->y, p->score + 1);
+                        cq.emplace_front(npr);
+                    }
+                }
+            }
+
+            delete p;
+        }
+    }
+
+    for (auto &e: exits) {
+
+        answer2 += e.second->size();
+        delete e.second;
+    }
 
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
 
     free(board);
+    free(honest_scores);
 
     return EXIT_SUCCESS;
 }
 
-long track(const char *const &board, int w, int h, int sx, int sy, int ex, int ey) {
-    auto scores = (int *) malloc(sizeof(int) * w * h);
-    fill(scores, scores + (w * h), numeric_limits<int>::max());
-    scores[sy * w + sx] = 0;
+long track(const char *const &board, int w, int h, int sx, int sy, int ex, int ey, int *honest_scores, int savings, bool trial) {
+    auto scores = trial ? honest_scores : (int *) malloc(sizeof(int) * w * h);
+    copy(honest_scores, honest_scores + (w * h), scores);
+//    fill(scores, scores + (w * h), numeric_limits<int>::max());
+//    scores[sy * w + sx] = 0;
 
 //    cout << " ------- map -------- \n";
 //    for (int y = 0; y < h; y++) {
@@ -186,28 +430,134 @@ long track(const char *const &board, int w, int h, int sx, int sy, int ex, int e
         if (board[(xy.second - 1) * w + xy.first] == '.' && scores[(xy.second - 1) * w + xy.first] > scores[xy.second * w + xy.first] + 1) {
             // can go up
             scores[(xy.second - 1) * w + xy.first] = scores[xy.second * w + xy.first] + 1;
-            q->emplace_back(xy.first, xy.second - 1);
+            q->emplace_front(xy.first, xy.second - 1);
         }
         if (board[(xy.second + 1) * w + xy.first] == '.' && scores[(xy.second + 1) * w + xy.first] > scores[xy.second * w + xy.first] + 1) {
             // can go down
             scores[(xy.second + 1) * w + xy.first] = scores[xy.second * w + xy.first] + 1;
-            q->emplace_back(xy.first, xy.second + 1);
+            q->emplace_front(xy.first, xy.second + 1);
         }
         if (board[xy.second * w + xy.first - 1] == '.' && scores[xy.second * w + xy.first - 1] > scores[xy.second * w + xy.first] + 1) {
             // can go left
             scores[xy.second * w + xy.first - 1] = scores[xy.second * w + xy.first] + 1;
-            q->emplace_back(xy.first - 1, xy.second);
+            q->emplace_front(xy.first - 1, xy.second);
         }
         if (board[xy.second * w + xy.first + 1] == '.' && scores[xy.second * w + xy.first + 1] > scores[xy.second * w + xy.first] + 1) {
             // can go right
             scores[xy.second * w + xy.first + 1] = scores[xy.second * w + xy.first] + 1;
-            q->emplace_back(xy.first + 1, xy.second);
+            q->emplace_front(xy.first + 1, xy.second);
         }
     }
 
     int res = scores[ey * w + ex];
-    free(scores);
+    if (!trial) {
+        free(scores);
+    }
     delete q;
 
     return res;
 }
+
+//long track2(const char *const &board, int w, int h, int sx, int sy, int ex, int ey, int cx, int cy, int *honest_scores, int savings) {
+//    auto scores = (int *) malloc(sizeof(int) * w * h);
+//    copy(honest_scores, honest_scores + (w * h), scores);
+//
+////    cout << " ------- map -------- \n";
+////    for (int y = 0; y < h; y++) {
+////        for (int x = 0; x < w; x++) {
+////            cout << board[y * w + x];
+////        }
+////        cout << endl;
+////    }
+//
+//    auto q = new deque<probe>();
+//    q->emplace_front(probe{.x = sx, .y = sy});
+//
+//    while (!q->empty()) {
+//        auto p = q->front();
+//        q->pop_front();
+//
+//        if (p.x == ex && p.y == ey) {
+//            continue;
+//        }
+//
+//        if (p.y > 0 && scores[(p.y - 1) * w + p.x] > scores[p.y * w + p.x] + 1) {
+//            if (board[(p.y - 1) * w + p.x] == '.') {
+//                // can go up without cheating
+//                scores[(p.y - 1) * w + p.x] = scores[p.y * w + p.x] + 1;
+//                q->emplace_front(probe{.x = p.x, .y = p.y - 1, .cheating = p.cheating && p.cheat > 0, .cheated = p.cheat == 0, .cheat = p.cheating ? 0 : p.cheat});
+//            } else {
+//                // there's a wall up, so check if we can cheat
+//                if (!p.cheated && p.y - 1 == cy && p.x == cx) {
+//                    // start cheating
+//                    scores[(p.y - 1) * w + p.x] = scores[p.y * w + p.x] + 1;
+//                    q->emplace_front(probe{.x = p.x, .y = p.y - 1, .cheating = true, .cheated = false, .cheat = p.cheat - 1});
+//                } else if (p.cheating && p.cheat > 0) {
+//                    // continue cheating
+//                    scores[(p.y - 1) * w + p.x] = scores[p.y * w + p.x] + 1;
+//                    q->emplace_front(probe{.x = p.x, .y = p.y - 1, .cheating = true, .cheated = p.cheat == 1, .cheat = p.cheat - 1});
+//                }
+//            }
+//        }
+//        if (p.y < h - 1 && scores[(p.y + 1) * w + p.x] > scores[p.y * w + p.x] + 1) {
+//            if (board[(p.y + 1) * w + p.x] == '.') {
+//                // can go down without cheating
+//                scores[(p.y + 1) * w + p.x] = scores[p.y * w + p.x] + 1;
+//                q->emplace_front(probe{.x = p.x, .y = p.y + 1, .cheating = p.cheating && p.cheat > 0, .cheated = p.cheat == 0, .cheat = p.cheating ? 0 : p.cheat});
+//            } else {
+//                // there's a wall down, so check if we can cheat
+//                if (!p.cheated && p.y + 1 == cy && p.x == cx) {
+//                    // start cheating
+//                    scores[(p.y + 1) * w + p.x] = scores[p.y * w + p.x] + 1;
+//                    q->emplace_front(probe{.x = p.x, .y = p.y + 1, .cheating = true, .cheated = false, .cheat = p.cheat - 1});
+//                } else if (p.cheating && p.cheat > 0) {
+//                    // continue cheating
+//                    scores[(p.y + 1) * w + p.x] = scores[p.y * w + p.x] + 1;
+//                    q->emplace_front(probe{.x = p.x, .y = p.y + 1, .cheating = true, .cheated = p.cheat == 1, .cheat = p.cheat - 1});
+//                }
+//            }
+//        }
+//        if (p.x > 0 && scores[p.y * w + p.x - 1] > scores[p.y * w + p.x] + 1) {
+//            if (board[p.y * w + p.x - 1] == '.') {
+//                // can go left without cheating
+//                scores[p.y * w + p.x - 1] = scores[p.y * w + p.x] + 1;
+//                q->emplace_front(probe{.x = p.x - 1, .y = p.y, .cheating = p.cheating && p.cheat > 0, .cheated = p.cheat == 0, .cheat = p.cheating ? 0 : p.cheat});
+//            } else {
+//                // there's a wall left, so check if we can cheat
+//                if (!p.cheated && p.y == cy && p.x - 1 == cx) {
+//                    // start cheating
+//                    scores[p.y * w + p.x - 1] = scores[p.y * w + p.x] + 1;
+//                    q->emplace_front(probe{.x = p.x - 1, .y = p.y, .cheating = true, .cheated = false, .cheat = p.cheat - 1});
+//                } else if (p.cheating && p.cheat > 0) {
+//                    // continue cheating
+//                    scores[p.y * w + p.x - 1] = scores[p.y * w + p.x] + 1;
+//                    q->emplace_front(probe{.x = p.x - 1, .y = p.y, .cheating = true, .cheated = p.cheat == 1, .cheat = p.cheat - 1});
+//                }
+//            }
+//        }
+//        if (p.x < w - 1 && scores[p.y * w + p.x + 1] > scores[p.y * w + p.x] + 1) {
+//            if (board[p.y * w + p.x + 1] == '.') {
+//                // can go right without cheating
+//                scores[p.y * w + p.x + 1] = scores[p.y * w + p.x] + 1;
+//                q->emplace_front(probe{.x = p.x + 1, .y = p.y, .cheating = p.cheating && p.cheat > 0, .cheated = p.cheat == 0, .cheat = p.cheating ? 0 : p.cheat});
+//            } else {
+//                // there's a wall right, so check if we can cheat
+//                if (!p.cheated && p.y == cy && p.x + 1 == cx) {
+//                    // start cheating
+//                    scores[p.y * w + p.x + 1] = scores[p.y * w + p.x] + 1;
+//                    q->emplace_front(probe{.x = p.x + 1, .y = p.y, .cheating = true, .cheated = false, .cheat = p.cheat - 1});
+//                } else if (p.cheating && p.cheat > 0) {
+//                    // continue cheating
+//                    scores[p.y * w + p.x + 1] = scores[p.y * w + p.x] + 1;
+//                    q->emplace_front(probe{.x = p.x + 1, .y = p.y, .cheating = true, .cheated = p.cheat == 1, .cheat = p.cheat - 1});
+//                }
+//            }
+//        }
+//    }
+//
+//    int res = scores[ey * w + ex];
+//    free(scores);
+//    delete q;
+//
+//    return res;
+//}
