@@ -29,6 +29,7 @@ using namespace std;
 
 string find_num_instructions(string &pattern, map<char, pair<int, int>> &pad);
 
+void transform(map<string, string> &cache, map<string, long> &counts, map<char, pair<int, int>> &pad);
 string find_dir_instructions(string &pattern, map<char, pair<int, int>> &pad);
 
 int main(int argc, char *argv[]) {
@@ -99,6 +100,29 @@ int main(int argc, char *argv[]) {
 
     long answer2 = 0;
 
+    for (auto &code: codes) {
+        cout << "checking code: " << code << endl;
+        string pattern;
+        pattern = find_num_instructions(code, numpad);
+        map<string, string> cache;
+        map<string, long> counts;
+        counts[find_dir_instructions(pattern, dirpad)] = 1L;
+
+        for (int i = 0; i < 24; i++) {
+            transform(cache, counts, dirpad);
+        }
+        long tc = 0;
+        for (auto &p: counts) {
+            cout << "  " << p.first << ": " << p.second << endl;
+            cout << "    " << p.first.length() << " x " << p.second << endl;
+            tc += (p.second * (long) p.first.length());
+        }
+//        for (auto &p: cache) {
+//            cout << "  " << p.first << " -> " << p.second << endl;
+//        }
+        answer2 += ((long) tc * stoi(code.substr(0, 3)));
+    }
+
     cout << "Answer 1: " << answer1 << endl;
     cout << "Answer 2: " << answer2 << endl;
 
@@ -113,64 +137,37 @@ string find_num_instructions(string &pattern, map<char, pair<int, int>> &pad) {
 
     for (char c: pattern) {
         auto p = pad[c];
-        if ((p.second < 3 && y < 3) || (p.first > 0 && x > 0)) {
-            // safe, first left
+        if (y < 3 || (y == 3 && p.first > 0)) {
+            // safely move left
             while (x > p.first) {
                 result += '<';
                 x--;
             }
-            while (y < p.second) {
-                result += 'v';
-                y++;
-            }
-            while (y > p.second) {
-                result += '^';
-                y--;
-            }
-            while (x < p.first) {
-                result += '>';
-                x++;
-            }
-            result += 'A';
-        } else if (p.first == 0 && y == 3) {
-            // up first
-            while (y > p.second) {
-                result += '^';
-                y--;
-            }
-            while (y < p.second) {
-                result += 'v';
-                y++;
-            }
-            while (x > p.first) {
-                result += '<';
-                x--;
-            }
-            while (x < p.first) {
-                result += '>';
-                x++;
-            }
-            result += 'A';
-        } else if (x == 0 && p.second == 3) {
-            // right first
-            while (x < p.first) {
-                result += '>';
-                x++;
-            }
-            while (x > p.first) {
-                result += '<';
-                x--;
-            }
-            while (y < p.second) {
-                result += 'v';
-                y++;
-            }
-            while (y > p.second) {
-                result += '^';
-                y--;
-            }
-            result += 'A';
         }
+        if (x > 0 || (x == 0 && p.second < 3)) {
+            // safely move down
+            while (y < p.second) {
+                result += 'v';
+                y++;
+            }
+        }
+        while (y > p.second) {
+            result += '^';
+            y--;
+        }
+        while (x > p.first) {
+            result += '<';
+            x--;
+        }
+        while (x < p.first) {
+            result += '>';
+            x++;
+        }
+        while (y < p.second) {
+            result += 'v';
+            y++;
+        }
+        result += 'A';
     }
 
     return result;
@@ -182,84 +179,160 @@ string find_dir_instructions(string &pattern, map<char, pair<int, int>> &pad) {
 
     string result;
 
+//    cout << "  checkking \"" << pattern << "\"\n";
     for (char c: pattern) {
         auto p = pad[c];
-        if (p.second == y) {
-            // the same row
+        if (y == 1 || p.first > 0) {
             while (x > p.first) {
                 result += '<';
                 x--;
             }
-            while (x < p.first) {
-                result += '>';
-                x++;
-            }
-            result += 'A';
-        } else if (p.first == x) {
-            // the same column
-            while (y < p.second) {
-                result += 'v';
-                y++;
-            }
+        }
+        if (x > 0) {
             while (y > p.second) {
                 result += '^';
                 y--;
             }
-            result += 'A';
-        } else {
-            // optimize for next robot
-            if (x == 0 && y == 1) {
-                // we're over '<' and we have to move right first
-                while (x < p.first) {
-                    result += '>';
-                    x++;
-                }
-                while (y < p.second) {
-                    result += 'v';
-                    y++;
-                }
-                while (y > p.second) {
-                    result += '^';
-                    y--;
-                }
-                result += 'A';
-            } else if (p.first == 0 && p.second == 1) {
-                // we're moving to '<', so we have to move down first
-                while (y < p.second) {
-                    result += 'v';
-                    y++;
-                }
-                while (x > p.first) {
-                    result += '<';
-                    x--;
-                }
-                while (x < p.first) {
-                    result += '>';
-                    x++;
-                }
-                result += 'A';
-            } else {
-                // we're moving within ^, V, > and A
-                while (y < p.second) {
-                    result += 'v';
-                    y++;
-                }
-                while (y > p.second) {
-                    result += '^';
-                    y--;
-                }
-                while (x > p.first) {
-                    result += '<';
-                    x--;
-                }
-                while (x < p.first) {
-                    result += '>';
-                    x++;
-                }
-                result += 'A';
-            }
         }
+        while (y < p.second) {
+            result += 'v';
+            y++;
+        }
+        while (x > p.first) {
+            result += '<';
+            x--;
+        }
+        while (x < p.first) {
+            result += '>';
+            x++;
+        }
+        while (y > p.second) {
+            result += '^';
+            y--;
+        }
+        result += 'A';
+////        cout << "    checking '" << c << "': ";
+//        if (p.second == y) {
+//            // the same row
+//            while (x > p.first) {
+////                cout << '<';
+//                result += '<';
+//                x--;
+//            }
+//            while (x < p.first) {
+////                cout << '>';
+//                result += '>';
+//                x++;
+//            }
+////            cout << 'A';
+//            result += 'A';
+//        } else if (p.first == x) {
+//            // the same column
+//            while (y < p.second) {
+////                cout << 'v';
+//                result += 'v';
+//                y++;
+//            }
+//            while (y > p.second) {
+////                cout << '^';
+//                result += '^';
+//                y--;
+//            }
+////            cout << 'A';
+//            result += 'A';
+//        } else {
+//            // optimize for next robot
+//            if (x == 0 && y == 1) {
+//                // we're over '<' and we have to move right first
+//                while (x < p.first) {
+////                    cout << '>';
+//                    result += '>';
+//                    x++;
+//                }
+//                while (y < p.second) {
+////                    cout << 'v';
+//                    result += 'v';
+//                    y++;
+//                }
+//                while (y > p.second) {
+////                    cout << '^';
+//                    result += '^';
+//                    y--;
+//                }
+////                cout << 'A';
+//                result += 'A';
+//            } else if (p.first == 0 && p.second == 1) {
+//                // we're moving to '<', so we have to move down first
+//                while (y < p.second) {
+////                    cout << 'v';
+//                    result += 'v';
+//                    y++;
+//                }
+//                while (x > p.first) {
+////                    cout << '<';
+//                    result += '<';
+//                    x--;
+//                }
+//                while (x < p.first) {
+////                    cout << '>';
+//                    result += '>';
+//                    x++;
+//                }
+////                cout << 'A';
+//                result += 'A';
+//            } else {
+//                // we're moving within ^, V, > and A
+//                while (y < p.second) {
+////                    cout << 'v';
+//                    result += 'v';
+//                    y++;
+//                }
+//                while (y > p.second) {
+////                    cout << '^';
+//                    result += '^';
+//                    y--;
+//                }
+//                while (x > p.first) {
+////                    cout << '<';
+//                    result += '<';
+//                    x--;
+//                }
+//                while (x < p.first) {
+////                    cout << '>';
+//                    result += '>';
+//                    x++;
+//                }
+//                result += 'A';
+//            }
+//        }
+////        cout << endl;
     }
 
     return result;
+}
+
+void transform(map<string, string> &cache, map<string, long> &counts, map<char, pair<int, int>> &pad) {
+    map<string, long> new_counts;
+    for (auto &p: counts) {
+        vector<string> subpatterns;
+        string::size_type p1 = 0;
+        string::size_type p2;
+        cout << "  splitting \"" << p.first << "\" into:\n";
+        while (p1 < p.first.length()) {
+            p2 = p.first.find('A', p1) + 1;
+            subpatterns.push_back(p.first.substr(p1, p2 - p1));
+            p1 = p2;
+        }
+        for (auto &sp: subpatterns) {
+            cout << "    " << sp << " -> ";
+            if (!cache.contains(sp)) {
+                string t = find_dir_instructions(sp, pad);
+                cache[sp] = t;
+            }
+            cout << cache[sp] << endl;
+            new_counts[cache[sp]] += p.second;
+        }
+    }
+    counts.clear();
+    counts.insert(new_counts.begin(), new_counts.end());
 }
