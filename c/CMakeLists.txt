@@ -22,8 +22,8 @@ project(aoc2025 VERSION 1.0.0
 
 set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/_install")
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O0 -g")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O2")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O0 -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O2")
 
 set(commands
     day01
@@ -32,6 +32,7 @@ set(commands
     day04
     day05
     day06
+    day07
 )
 
 configure_file(config.h.in "${CMAKE_INSTALL_PREFIX}/include/config.h")
